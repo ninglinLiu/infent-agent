@@ -17,8 +17,8 @@ export function NeonHeader() {
           <Link href="#features" className="neon-text-cyan hover:text-cyan-300 transition-colors">
             Features
           </Link>
-          <Link href="#architecture" className="neon-text-cyan hover:text-cyan-300 transition-colors">
-            Architecture
+          <Link href="#ai-consultant" className="neon-text-cyan hover:text-cyan-300 transition-colors">
+            AI Advisor
           </Link>
           <Link href="#metrics" className="neon-text-cyan hover:text-cyan-300 transition-colors">
             Metrics

@@ -5,11 +5,11 @@
   },
   "problem": {
     "zh": "传统投顾服务成本高，覆盖面有限；风险管理滞后，市场风险识别不全面；客户面临信息过载，投资决策效率低且易出错。",
-    "en": "High cost and limited coverage of traditional advisory services; lagging risk management and incomplete market risk identification; clients face information overload, leading to low efficiency and error-prone investment decisions."
+    "en": "1. Group Pain Point: Non-financial professionals want to invest but lack systematic financial knowledge.\n\n2. Decision Dilemma: Ordinary investors rely on intuition, leading to frequent mistakes and risks.\n\n3. Supply Gap: Existing tools target professionals, with no user-friendly options for ordinary investors."
   },
   "solution": {
     "zh": "构建集个性化智能投顾、实时智能风险预警和自动化风险管理于一体的 AI 智能体。利用机器学习分析用户画像和市场数据，提供个性化投资策略和调仓建议，并运用图神经网络等技术实时监测和识别信用、市场、欺诈等各类风险，优化内部运营流程。",
-    "en": "Develop an AI agent integrating 'Personalized Smart Advisory,' 'Real-time Intelligent Risk Warning,' and 'Automated Risk Management.' It uses machine learning to analyze user profiles and market data, offers customized investment strategies and portfolio adjustments, and employs GNNs to monitor and identify credit, market, and fraud risks in real time, optimizing internal operations."
+    "en": "1. Simplify and embed systematic financial knowledge into AI tool outputs.\n\n2. Provide AI-driven objective analysis to avoid intuitive decision risks.\n\n3. Develop user-friendly, lightweight tools for non-professional investors."
   },
   "modules": {
     "zh": [

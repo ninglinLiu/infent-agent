@@ -31,7 +31,7 @@ export function ProblemSolution() {
             <h3 className="text-3xl font-bold neon-text-magenta mb-6">
               {language === 'zh' ? '💔 痛点' : '💔 Problem'}
             </h3>
-            <p className="text-gray-300 leading-relaxed">{problem}</p>
+            <p className="text-gray-300 leading-relaxed whitespace-pre-line">{problem}</p>
           </HoloCard>
         </motion.div>
         <motion.div
@@ -43,7 +43,7 @@ export function ProblemSolution() {
             <h3 className="text-3xl font-bold" style={{ color: '#00ff88', textShadow: '0 0 10px currentColor, 0 0 20px currentColor' }}>
               {language === 'zh' ? '✨ 解决方案' : '✨ Solution'}
             </h3>
-            <p className="text-gray-300 leading-relaxed mt-6">{solution}</p>
+            <p className="text-gray-300 leading-relaxed mt-6 whitespace-pre-line">{solution}</p>
           </HoloCard>
         </motion.div>
       </div>
