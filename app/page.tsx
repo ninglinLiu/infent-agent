@@ -11,6 +11,7 @@ import { TimelineRoadmap } from '@/components/TimelineRoadmap'
 import { FAQ } from '@/components/FAQ'
 import { ContactForm } from '@/components/ContactForm'
 import { FooterCRT } from '@/components/FooterCRT'
+import { AIConsultant } from '@/components/AIConsultant'
 import { useLanguage } from '@/lib/language-context'
 
 function Card({ children, className }: { children: React.ReactNode, className?: string }) {
@@ -50,18 +51,15 @@ export default function Home() {
               {language === 'zh' ? '数据流' : 'Data Flow'}
             </h3>
             <div className="space-y-3">
-              {[
-                '用户画像分析',
-                '策略引擎生成',
-                '实时风险监控',
-                '自动化调仓',
-                '合规审计'
-              ].map((step, i) => (
+              {(language === 'zh' 
+                ? ['用户画像分析', '策略引擎生成', '实时风险监控', '自动化调仓', '合规审计']
+                : ['User Profiling Analysis', 'Strategy Engine Generation', 'Real-time Risk Monitoring', 'Automated Rebalancing', 'Compliance Audit']
+              ).map((step, i) => (
                 <div key={i} className="flex items-center">
                   <div className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-500 flex items-center justify-center mr-3 neon-text-purple font-bold">
                     {i + 1}
                   </div>
-                  <span className="text-gray-300">{language === 'zh' ? step : step}</span>
+                  <span className="text-gray-300">{step}</span>
                 </div>
               ))}
             </div>
@@ -74,6 +72,9 @@ export default function Home() {
 
       {/* Use Cases */}
       <UseCases />
+
+      {/* AI Consultant */}
+      <AIConsultant />
 
       {/* Roadmap */}
       <TimelineRoadmap />
