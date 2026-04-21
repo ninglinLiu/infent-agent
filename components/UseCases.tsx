@@ -27,7 +27,7 @@ export function UseCases() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
           >
-            <HoloCard className="p-6 h-full">
+            <HoloCard className="h-full" contentClassName="p-6">
               <div className="text-4xl mb-4">{useCase.icon}</div>
               <h3 className="text-2xl font-bold neon-text-magenta mb-3">{useCase.title}</h3>
               <p className="text-gray-300">{useCase.description}</p>

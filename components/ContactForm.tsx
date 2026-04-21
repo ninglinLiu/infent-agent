@@ -8,6 +8,7 @@ import { toast } from '@/components/ui/toast'
 
 export function ContactForm() {
   const { language } = useLanguage()
+  const feedbackEndpoint = process.env.NEXT_PUBLIC_FEEDBACK_ENDPOINT
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -38,19 +39,36 @@ export function ContactForm() {
     }
 
     try {
-      const response = await fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-      
-      if (response.ok) {
-        toast({ 
-          message: language === 'zh' ? '提交成功！我们会尽快回复。' : 'Success! We will get back to you soon.',
-          type: 'success'
+      if (feedbackEndpoint) {
+        const response = await fetch(feedbackEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
         })
-        setFormData({ name: '', email: '', company: '', message: '' })
+
+        if (!response.ok) {
+          throw new Error('Failed to send feedback')
+        }
+      } else {
+        // Static deployments cannot use local API routes, so fall back to mailto.
+        const subject = encodeURIComponent(`Product Demo Request - ${formData.name}`)
+        const body = encodeURIComponent(
+          [
+            `Name: ${formData.name}`,
+            `Email: ${formData.email}`,
+            `Company: ${formData.company || '-'}`,
+            '',
+            formData.message
+          ].join('\n')
+        )
+        window.location.href = `mailto:contact@example.com?subject=${subject}&body=${body}`
       }
+
+      toast({
+        message: language === 'zh' ? '提交成功！我们会尽快回复。' : 'Success! We will get back to you soon.',
+        type: 'success'
+      })
+      setFormData({ name: '', email: '', company: '', message: '' })
     } catch (error) {
       toast({ 
         message: language === 'zh' ? '提交失败，请稍后重试' : 'Submission failed, please try again',

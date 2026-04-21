@@ -1,0 +1,38 @@
+"use client"
+
+import { AgentChat } from "../AgentChat"
+import { KLineChart } from "../KLineChart"
+import { MetricCards } from "../MetricCards"
+import { StrategyTimeline } from "../StrategyTimeline"
+import { PortfolioPanel } from "../PortfolioPanel"
+import { NewsTicker } from "../NewsTicker"
+import { HeatMap } from "../HeatMap"
+
+export function AgentView() {
+  return (
+    <div className="h-full grid grid-cols-[520px_1fr_340px] gap-2.5 min-h-0">
+      {/* Left: big chat */}
+      <div className="min-h-0">
+        <AgentChat />
+      </div>
+
+      {/* Center: live reaction */}
+      <div className="flex flex-col gap-2.5 min-h-0">
+        <MetricCards />
+        <div className="flex-[1.2] min-h-0">
+          <KLineChart />
+        </div>
+        <div className="grid grid-cols-2 gap-2.5 flex-1 min-h-[240px]">
+          <HeatMap />
+          <StrategyTimeline />
+        </div>
+      </div>
+
+      {/* Right: portfolio + news */}
+      <div className="grid grid-rows-[1fr_1fr] gap-2.5 min-h-0">
+        <PortfolioPanel />
+        <NewsTicker />
+      </div>
+    </div>
+  )
+}

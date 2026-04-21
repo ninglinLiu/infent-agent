@@ -77,10 +77,15 @@ export function MetricsPanel() {
   }, [language])
 
   return (
-    <section id="metrics" className="py-20 container mx-auto px-4">
-      <h2 className="text-4xl font-bold text-center mb-12 neon-text-cyan">
-        {language === 'zh' ? '实时指标看板' : 'Real-time Metrics'}
+    <section id="metrics" className="py-24 container mx-auto px-4">
+      <h2 className="font-display text-4xl font-black text-center mb-3 md:text-5xl">
+        <span className="bg-gradient-to-r from-violet-200 via-fuchsia-200 to-cyan-200 bg-clip-text text-transparent">
+          {language === 'zh' ? '实时指标看板' : 'Real-time Metrics'}
+        </span>
       </h2>
+      <p className="font-mono text-center text-[10px] uppercase tracking-[0.45em] text-zinc-500 mb-14">
+        {language === 'zh' ? '数据脉冲 · 可演进' : 'Live pulses · evolvable'}
+      </p>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {metrics.map((metric, index) => (
           <MetricCard

@@ -1,0 +1,33 @@
+"use client"
+
+import { KLineChart } from "../KLineChart"
+import { MetricCards } from "../MetricCards"
+import { StrategyTimeline } from "../StrategyTimeline"
+import { PortfolioPanel } from "../PortfolioPanel"
+import { HeatMap } from "../HeatMap"
+import { NewsTicker } from "../NewsTicker"
+import { AgentChat } from "../AgentChat"
+
+export function WorkspaceView() {
+  return (
+    <div className="flex-1 min-w-0 flex gap-2.5 min-h-0">
+      <div className="flex-1 min-w-0 flex flex-col gap-2.5 min-h-0">
+        <MetricCards />
+        <div className="flex-[1.2] min-h-0">
+          <KLineChart />
+        </div>
+        <div className="grid grid-cols-2 gap-2.5 flex-1 min-h-[220px]">
+          <StrategyTimeline />
+          <PortfolioPanel />
+        </div>
+        <div className="grid grid-cols-[1.4fr_1fr] gap-2.5 flex-1 min-h-[200px]">
+          <HeatMap />
+          <NewsTicker />
+        </div>
+      </div>
+      <div className="w-[400px] shrink-0 flex flex-col min-h-0">
+        <AgentChat />
+      </div>
+    </div>
+  )
+}

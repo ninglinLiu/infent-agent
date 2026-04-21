@@ -9,9 +9,13 @@ const ArchitectureSceneClient = () => {
   const rendererRef = useRef<any>(null)
 
   useEffect(() => {
-    if (!containerRef.current) return
+    const container = containerRef.current
+    if (!container) return
+    let cleanup = () => {}
+    let disposed = false
 
     import('three').then((THREE) => {
+      if (disposed) return
       // Scene setup
       const scene = new THREE.Scene()
       scene.background = new THREE.Color(0x000000)
@@ -20,7 +24,7 @@ const ArchitectureSceneClient = () => {
       // Camera
       const camera = new THREE.PerspectiveCamera(
         75,
-        containerRef.current.clientWidth / containerRef.current.clientHeight,
+        container.clientWidth / container.clientHeight,
         0.1,
         1000
       )
@@ -28,8 +32,8 @@ const ArchitectureSceneClient = () => {
 
       // Renderer
       const renderer = new THREE.WebGLRenderer({ antialias: true })
-      renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight)
-      containerRef.current.appendChild(renderer.domElement)
+      renderer.setSize(container.clientWidth, container.clientHeight)
+      container.appendChild(renderer.domElement)
       rendererRef.current = renderer
 
       // Grid
@@ -87,24 +91,28 @@ const ArchitectureSceneClient = () => {
 
       // Handle resize
       const handleResize = () => {
-        if (!containerRef.current) return
-        camera.aspect = containerRef.current.clientWidth / containerRef.current.clientHeight
+        camera.aspect = container.clientWidth / container.clientHeight
         camera.updateProjectionMatrix()
-        renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight)
+        renderer.setSize(container.clientWidth, container.clientHeight)
       }
       window.addEventListener('resize', handleResize)
 
-      return () => {
+      cleanup = () => {
         window.removeEventListener('resize', handleResize)
-        if (rendererRef.current && containerRef.current) {
+        if (rendererRef.current) {
           const canvas = rendererRef.current.domElement
-          if (canvas && containerRef.current.contains(canvas)) {
-            containerRef.current.removeChild(canvas)
+          if (canvas && container.contains(canvas)) {
+            container.removeChild(canvas)
           }
           rendererRef.current.dispose()
         }
       }
     })
+
+    return () => {
+      disposed = true
+      cleanup()
+    }
   }, [])
 
   return (

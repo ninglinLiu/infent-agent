@@ -1,52 +1,27 @@
-'use client'
+import { ShowcaseNav } from "@/components/showcase/ShowcaseNav"
+import { Hero } from "@/components/showcase/Hero"
+import { ProblemSection } from "@/components/showcase/ProblemSection"
+import { SolutionSection } from "@/components/showcase/SolutionSection"
+import { LandscapeSection } from "@/components/showcase/LandscapeSection"
+import { ValueCanvas } from "@/components/showcase/ValueCanvas"
+import { BrandSection } from "@/components/showcase/BrandSection"
+import { TeamSection } from "@/components/showcase/TeamSection"
+import { CTASection } from "@/components/showcase/CTASection"
+import { Footer } from "@/components/showcase/Footer"
 
-import { Hero } from '@/components/Hero'
-import { ProblemSolution } from '@/components/ProblemSolution'
-import { KeyModules } from '@/components/KeyModules'
-import { MetricsPanel } from '@/components/MetricsPanel'
-import { UseCases } from '@/components/UseCases'
-import { TimelineRoadmap } from '@/components/TimelineRoadmap'
-import { FAQ } from '@/components/FAQ'
-import { ContactForm } from '@/components/ContactForm'
-import { FooterCRT } from '@/components/FooterCRT'
-import { AIConsultant } from '@/components/AIConsultant'
-import { useLanguage } from '@/lib/language-context'
-
-
-export default function Home() {
-  const { language } = useLanguage()
-
+export default function ShowcasePage() {
   return (
-    <div className="cyberpunk-grid noise min-h-screen">
-      {/* Hero Section */}
+    <main className="relative min-h-screen bg-[var(--bg-0)] text-[var(--fg-0)] overflow-x-hidden">
+      <ShowcaseNav />
       <Hero />
-
-      {/* Problem & Solution */}
-      <ProblemSolution />
-
-      {/* Key Modules */}
-      <KeyModules />
-
-      {/* AI Investment Advisor */}
-      <AIConsultant />
-
-      {/* Metrics */}
-      <MetricsPanel />
-
-      {/* Use Cases */}
-      <UseCases />
-
-      {/* Roadmap */}
-      <TimelineRoadmap />
-
-      {/* FAQ */}
-      <FAQ />
-
-      {/* Contact */}
-      <ContactForm />
-
-      {/* Footer */}
-      <FooterCRT />
-    </div>
+      <ProblemSection />
+      <SolutionSection />
+      <LandscapeSection />
+      <ValueCanvas />
+      <BrandSection />
+      <TeamSection />
+      <CTASection />
+      <Footer />
+    </main>
   )
 }
