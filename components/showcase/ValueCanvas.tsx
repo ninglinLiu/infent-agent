@@ -1,54 +1,40 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Coins, Goal, ScanLine, Sparkles, Target, Users } from "lucide-react"
+import { Goal, ScanLine, Sparkles, Users } from "lucide-react"
 import { Orbs } from "./Orbs"
-
-const AUDIENCE = [
-  "Non-professionals & ordinary investors",
-  "Want to invest but lack financial knowledge",
-  "Need an accessible on-ramp to the market",
-]
-const PAIN_SOLVED = [
-  "Lack professional financial knowledge",
-  "Rely on intuition, prone to mistakes",
-  "No user-friendly tools balancing pro & UX",
-]
-const VALUE = [
-  "Simplify financial jargon & complex outputs",
-  "AI-driven objective analysis",
-  "Lightweight design, lower barriers",
-]
+import { useLang } from "@/lib/i18n"
+import { useShowcaseCopy } from "@/lib/showcase-copy"
 
 export function ValueCanvas() {
+  const { lang } = useLang()
+  const c = useShowcaseCopy()
+  const zh = lang === "zh"
+
   return (
     <section id="value" className="relative overflow-hidden py-32 sm:py-44">
       <Orbs variant="default" />
       <div className="relative z-10 sec-x">
         <div className="mb-16 max-w-[1200px]">
           <span className="chip-pill mb-6 text-[11px] text-[var(--fg-2)]">
-            <span className="text-[#ffb547]">04</span> · Value Proposition Canvas
+            <span className="text-[#ffb547]">04</span> · {c.value.kicker}
           </span>
-          <h2 className="display-xxl text-[clamp(44px,6vw,96px)]">
-            Built for a specific person.{" "}
-            <span className="text-gradient-green">Not everyone.</span>
+          <h2 className={`display-xxl text-[clamp(44px,6vw,96px)] ${zh ? "break-keep" : ""}`}>
+            {c.value.titleBefore}
+            {zh ? "" : " "}
+            <span className="text-gradient-green">{c.value.titleHighlight}</span>
           </h2>
-          <p className="mt-6 max-w-[620px] text-[15.5px] text-[var(--fg-2)] leading-relaxed">
-            We designed the canvas backwards — starting from an imagined user (a 28-year-old salaried
-            professional with ¥100K savings and zero experience) — and working back to features.
-          </p>
+          <p className="mt-6 max-w-[620px] text-[15.5px] text-[var(--fg-2)] leading-relaxed">{c.value.lead}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Left column — audience & pain */}
           <div className="space-y-5">
-            <Pane icon={Users} title="Target audience" color="#22d3ee" items={AUDIENCE} />
-            <Pane icon={ScanLine} title="Pain points solved" color="#ff6aa8" items={PAIN_SOLVED} />
+            <Pane icon={Users} title={c.value.audienceTitle} color="#22d3ee" items={c.value.audience} />
+            <Pane icon={ScanLine} title={c.value.painTitle} color="#ff6aa8" items={c.value.pains} />
           </div>
 
-          {/* Right column — unique value + differentiator */}
           <div className="space-y-5">
-            <Pane icon={Sparkles} title="Unique value delivered" color="#00ff9f" items={VALUE} />
+            <Pane icon={Sparkles} title={c.value.uniqueTitle} color="#00ff9f" items={c.value.unique} />
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -63,17 +49,13 @@ export function ValueCanvas() {
             >
               <div className="flex items-center gap-2 mb-4">
                 <Goal className="h-4 w-4 text-[#00ff9f]" />
-                <span className="chip-pill text-[11px]">Key differentiator</span>
+                <span className="chip-pill text-[11px]">{c.value.diffKicker}</span>
               </div>
               <h3 className="font-display text-[26px] md:text-[34px] leading-[1.05] font-semibold">
-                Balance <span className="text-gradient-green">professional analysis</span> and{" "}
-                <span className="text-gradient-pink">user-friendliness</span> — unlike complex pro tools or
-                superficial consumer apps.
+                {c.value.diffBefore} <span className="text-gradient-green">{c.value.diffPro}</span> {c.value.diffMid}{" "}
+                <span className="text-gradient-pink">{c.value.diffFriendly}</span> {c.value.diffAfter}
               </h3>
-              <p className="mt-5 text-[13.5px] text-[var(--fg-2)] leading-relaxed max-w-[520px]">
-                We fill the market gap between $24K/yr terminals and single-tap robo-advisors. A companion,
-                not a dashboard.
-              </p>
+              <p className="mt-5 text-[13.5px] text-[var(--fg-2)] leading-relaxed max-w-[520px]">{c.value.diffLead}</p>
             </motion.div>
           </div>
         </div>
@@ -112,11 +94,8 @@ function Pane({
       </div>
       <ul className="space-y-3">
         {items.map((t, i) => (
-          <li key={i} className="flex items-start gap-3 text-[14.5px] text-[var(--fg-1)]">
-            <span
-              className="mt-2 h-1.5 w-1.5 rounded-full shrink-0"
-              style={{ background: color }}
-            />
+          <li key={`${title}-${i}`} className="flex items-start gap-3 text-[14.5px] text-[var(--fg-1)]">
+            <span className="mt-2 h-1.5 w-1.5 rounded-full shrink-0" style={{ background: color }} />
             {t}
           </li>
         ))}

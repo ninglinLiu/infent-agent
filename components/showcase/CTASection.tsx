@@ -4,8 +4,14 @@ import Link from "next/link"
 import { ArrowRight, Github } from "lucide-react"
 import { BRAND } from "@/lib/brand"
 import { Orbs } from "./Orbs"
+import { useLang } from "@/lib/i18n"
+import { useShowcaseCopy } from "@/lib/showcase-copy"
 
 export function CTASection() {
+  const { lang } = useLang()
+  const c = useShowcaseCopy()
+  const zh = lang === "zh"
+
   return (
     <section className="relative overflow-hidden pt-24 pb-32">
       <Orbs variant="default" />
@@ -19,20 +25,21 @@ export function CTASection() {
         >
           <div className="dotted-ring absolute inset-0 opacity-[0.06]" />
           <div className="relative z-10 max-w-[1100px]">
-            <span className="chip-pill mb-6 text-[11px]">Product demonstration · 06</span>
-            <h2 className="display-xxl text-[clamp(44px,7.5vw,128px)]">
-              <span className="text-gradient-green">Launch</span> the console.
+            <span className="chip-pill mb-6 text-[11px]">{c.cta.kicker}</span>
+            <h2 className={`display-xxl text-[clamp(44px,7.5vw,128px)] ${zh ? "break-keep" : ""}`}>
+              <span className="text-gradient-green">{c.cta.titleLaunch}</span>
+              {zh ? "" : " "}
+              {c.cta.titleRest}
             </h2>
             <p className="mt-8 max-w-[640px] text-[16px] sm:text-[18px] text-[var(--fg-1)] leading-relaxed">
-              The product is live and fully interactive. Ask a question in plain language, receive a
-              ranked strategy card, hit execute, and watch risk / PnL / exposure update in real time.
+              {c.cta.lead}
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <Link
                 href="/dashboard"
                 className="group inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-[14px] font-semibold bg-white text-black hover:bg-[#00ff9f] transition"
               >
-                Open live console
+                {c.cta.open}
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition" />
               </Link>
               <a
@@ -42,10 +49,10 @@ export function CTASection() {
                 className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-[14px] font-semibold border border-white/15 hover:border-white/40 hover:bg-white/5 transition"
               >
                 <Github className="h-4 w-4" />
-                View source
+                {c.cta.source}
               </a>
               <div className="ml-2 text-[12px] text-[var(--fg-3)]">
-                {BRAND.team} · Report Date 2025/11/25
+                {c.common.team} · {c.cta.report}
               </div>
             </div>
           </div>

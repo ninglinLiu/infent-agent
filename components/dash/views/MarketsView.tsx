@@ -4,9 +4,11 @@ import { HeatMap } from "../HeatMap"
 import { KLineChart } from "../KLineChart"
 import { NewsTicker } from "../NewsTicker"
 import { TOP_TICKERS } from "@/lib/mock/market"
-import { BarChart3, Globe2 } from "lucide-react"
+import { Globe2 } from "lucide-react"
+import { useDash } from "@/lib/dash-store"
 
 export function MarketsView() {
+  const { selectSymbol } = useDash()
   return (
     <div className="h-full grid grid-cols-[1fr_360px] gap-2.5">
       <div className="flex flex-col gap-2.5 min-h-0">
@@ -22,7 +24,12 @@ export function MarketsView() {
             {TOP_TICKERS.map((row, i) => {
               const up = row.chg >= 0
               return (
-                <div key={i} className="surface-raised px-3 py-2">
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => selectSymbol(row.sym)}
+                  className="surface-raised px-3 py-2 text-left hover:border-[var(--line-2)] transition"
+                >
                   <div className="text-[10px] text-ghost font-mono-ui">{row.sym}</div>
                   <div className="tabular text-[15px] font-display font-semibold">
                     {row.px.toLocaleString(undefined, { maximumFractionDigits: 2 })}
@@ -31,13 +38,13 @@ export function MarketsView() {
                     {up ? "+" : ""}
                     {row.chg.toFixed(2)}%
                   </div>
-                </div>
+                </button>
               )
             })}
           </div>
         </div>
 
-        <div className="flex-[1.2] min-h-0">
+        <div className="flex-[1.4] min-h-[320px]">
           <KLineChart />
         </div>
         <div className="flex-1 min-h-[260px]">

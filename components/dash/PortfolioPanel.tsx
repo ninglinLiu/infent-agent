@@ -6,7 +6,7 @@ import { motion } from "framer-motion"
 import { ArrowDownRight, ArrowUpRight, Layers } from "lucide-react"
 
 export function PortfolioPanel() {
-  const { holdings } = useDash()
+  const { holdings, selectSymbol, chartInstrument } = useDash()
   const { lang } = useLang()
   const t = useT()
 
@@ -40,7 +40,12 @@ export function PortfolioPanel() {
                 <motion.tr
                   key={h.symbol}
                   layout
-                  className="border-t border-[var(--line-1)] hover:bg-[var(--bg-3)] transition"
+                  onClick={() => h.symbol !== "CASH" && selectSymbol(h.symbol)}
+                  className={`border-t border-[var(--line-1)] transition ${
+                    h.symbol === "CASH"
+                      ? ""
+                      : "cursor-pointer hover:bg-[var(--bg-3)]"
+                  } ${chartInstrument.symbol === h.symbol ? "bg-[rgba(0,255,159,0.05)]" : ""}`}
                 >
                   <td className="py-1.5">
                     <div className="flex items-center gap-2">

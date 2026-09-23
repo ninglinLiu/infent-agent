@@ -3,6 +3,8 @@
 import { createContext, useCallback, useContext, useMemo, useReducer, useRef } from "react"
 import { INITIAL_PORTFOLIO, SECTORS, type Holding, type SectorCell } from "@/lib/mock/market"
 import { STRATEGIES, type Strategy, type StrategyAction } from "@/lib/mock/agent"
+import { DEFAULT_INSTRUMENT, resolveInstrument } from "@/lib/market/presets"
+import type { ChartInterval, Instrument } from "@/lib/market/types"
 
 // An execution marker placed on the K-line chart
 export type ExecMark = {
@@ -38,6 +40,8 @@ type State = {
   activeStrategyId: string | null
   runs: StrategyRun[]
   toast: { id: string; tone: "up" | "down" | "info"; text: { zh: string; en: string } } | null
+  chartInstrument: Instrument
+  chartInterval: ChartInterval
 }
 
 type Action =
@@ -48,6 +52,8 @@ type Action =
   | { type: "APPLY_ACTION"; action: StrategyAction; strategyId: string }
   | { type: "TOAST"; toast: State["toast"] }
   | { type: "RESET" }
+  | { type: "SET_CHART_INSTRUMENT"; instrument: Instrument }
+  | { type: "SET_CHART_INTERVAL"; interval: ChartInterval }
 
 const INITIAL_METRICS: Metrics = {
   nav: 248_320.18,
@@ -65,6 +71,8 @@ const initialState: State = {
   activeStrategyId: null,
   runs: [],
   toast: null,
+  chartInstrument: DEFAULT_INSTRUMENT,
+  chartInterval: "60",
 }
 
 function applyActionToHoldings(holdings: Holding[], a: StrategyAction): Holding[] {
@@ -170,6 +178,10 @@ function reducer(state: State, action: Action): State {
     }
     case "TOAST":
       return { ...state, toast: action.toast }
+    case "SET_CHART_INSTRUMENT":
+      return { ...state, chartInstrument: action.instrument }
+    case "SET_CHART_INTERVAL":
+      return { ...state, chartInterval: action.interval }
     case "RESET":
       return initialState
     default:
@@ -183,6 +195,9 @@ type Ctx = State & {
   clearToast: () => void
   setTheme: (t: "dark" | "light") => void
   resetAll: () => void
+  setChartInstrument: (instrument: Instrument) => void
+  setChartInterval: (interval: ChartInterval) => void
+  selectSymbol: (input: string) => void
 }
 
 const DashContext = createContext<Ctx | null>(null)
@@ -200,6 +215,11 @@ export function DashProvider({ children }: { children: React.ReactNode }) {
     const strat = STRATEGIES[id]
     if (!strat) return
     dispatch({ type: "EXECUTE_STRATEGY", strategyId: id })
+    const firstTrade = strat.actions.find((a) => a.kind === "buy" || a.kind === "sell")
+    if (firstTrade) {
+      const inst = resolveInstrument(firstTrade.symbol)
+      if (inst) dispatch({ type: "SET_CHART_INSTRUMENT", instrument: inst })
+    }
     strat.actions.forEach((act, idx) => {
       const delay = 500 + idx * 700
       setTimeout(() => {
@@ -241,14 +261,61 @@ export function DashProvider({ children }: { children: React.ReactNode }) {
 
   const clearToast = useCallback(() => dispatch({ type: "TOAST", toast: null }), [])
   const setTheme = useCallback((t: "dark" | "light") => dispatch({ type: "SET_THEME", theme: t }), [])
+  const setChartInstrument = useCallback(
+    (instrument: Instrument) => dispatch({ type: "SET_CHART_INSTRUMENT", instrument }),
+    []
+  )
+  const setChartInterval = useCallback(
+    (interval: ChartInterval) => dispatch({ type: "SET_CHART_INTERVAL", interval }),
+    []
+  )
+  const selectSymbol = useCallback((input: string) => {
+    const resolved = resolveInstrument(input)
+    if (resolved) {
+      dispatch({ type: "SET_CHART_INSTRUMENT", instrument: resolved })
+      return
+    }
+    const symbol = input.trim().toUpperCase()
+    if (!symbol || symbol === "CASH") return
+    dispatch({
+      type: "SET_CHART_INSTRUMENT",
+      instrument: {
+        symbol,
+        name: symbol,
+        nameEn: symbol,
+        market: "",
+        yahoo: symbol,
+      },
+    })
+  }, [])
   const resetAll = useCallback(() => {
     dispatch({ type: "RESET" })
     markDispatch({ type: "reset" })
   }, [])
 
   const value = useMemo<Ctx>(
-    () => ({ ...state, marks, executeStrategy, clearToast, setTheme, resetAll }),
-    [state, marks, executeStrategy, clearToast, setTheme, resetAll]
+    () => ({
+      ...state,
+      marks,
+      executeStrategy,
+      clearToast,
+      setTheme,
+      resetAll,
+      setChartInstrument,
+      setChartInterval,
+      selectSymbol,
+    }),
+    [
+      state,
+      marks,
+      executeStrategy,
+      clearToast,
+      setTheme,
+      resetAll,
+      setChartInstrument,
+      setChartInterval,
+      selectSymbol,
+    ]
   )
 
   return <DashContext.Provider value={value}>{children}</DashContext.Provider>
