@@ -13,7 +13,7 @@ import { AMBER, Bake, Books, Box, Cable, CYAN, Glow, Lantern, Panel, PINK, Pipe,
 import { Abacus, ChristmasTree, CurveMirror, LessonMachine, Maneki, Postbox, RoadMarks } from './NightDistrict'
 import { shojiTexture, surfaceTexture, texture } from './night-textures'
 
-type Props = { onOpen: (view: NightDestination) => void; still: boolean; active: boolean; onReady: () => void; onFailure: () => void; reset: number; focus: NightDestination | null }
+type Props = { onOpen: (view: NightDestination) => void; onAbout: () => void; still: boolean; active: boolean; onReady: () => void; onFailure: () => void; reset: number; focus: NightDestination | null }
 type Tier = 'high' | 'mid' | 'low'
 
 function Shoji({ p, size }: { p: V3; size: [number, number] }) {
@@ -113,7 +113,7 @@ function Building({ onOpen, still }: Pick<Props, 'onOpen' | 'still'>) {
   </group>
 }
 
-function Street({ onOpen }: Pick<Props, 'onOpen'>) {
+function Street({ onOpen, onAbout }: Pick<Props, 'onOpen' | 'onAbout'>) {
   return <group>
     {/* Case-file vending machine: each file is an invitation to begin. */}
     <SceneLink onOpen={() => onOpen('practice')}><group position={[2.55, .15, .58]} rotation={[0, -.15, 0]}>
@@ -141,16 +141,16 @@ function Street({ onOpen }: Pick<Props, 'onOpen'>) {
     <Cable points={[[-3.1, 6.45, -.8], [-.1, 6.05, -1.9], [3.7, 6.8, -2.3]]} />
     <Cable points={[[-3.1, 6.05, -.8], [-2.4, 4.7, -.6], [-1.9, 4.5, -.35]]} />
     <Cable points={[[-3.1, 6.3, -.8], [-3.4, 5.9, 3.5], [-3.6, 6.4, 9]]} />
-    {/* Bicycle and a chalk A-board listing tonight's lessons. */}
+    {/* Bicycle and a front-door A-board linking to the original product showcase. */}
     <group position={[3.15, .5, -2.85]} rotation={[0, .9, 0]}>
       {[-.48, .48].map(x => <mesh key={x} position={[x, 0, 0]}><torusGeometry args={[.34, .028, 8, 32]} /><meshStandardMaterial color="#252d3c" metalness={.5} /></mesh>)}
       <Pipe from={[-.48, 0, 0]} to={[0, .49, 0]} r={.019} color="#b77783" /><Pipe from={[0, .49, 0]} to={[.48, 0, 0]} r={.019} color="#b77783" /><Pipe from={[-.48, 0, 0]} to={[.16, .01, 0]} r={.019} color="#b77783" /><Pipe from={[.16, .01, 0]} to={[.35, .62, 0]} r={.021} color="#b77783" /><Pipe from={[0, .49, 0]} to={[.35, .55, 0]} r={.019} color="#b77783" /><Box p={[0, .53, 0]} s={[.2, .06, .12]} color="#1c2732" />
       <Box p={[.42, .72, 0]} s={[.3, .2, .24]} color="#3a3f4a" />
     </group>
-    <group position={[1.2, .15, 2.0]} rotation={[0, -.22, 0]}>
-      <Panel p={[0, .48, .1]} size={[.6, .8]} rotation={[-.2, 0, 0]} title="TONIGHT" lines={'01  Price & value\n02  Risk rules\n03  Test your ideas'} kind="chalk" color="#2c4a3d" frame="#6e4a2c" depth={.05} onClick={() => onOpen('academy')} />
-      <Box p={[0, .45, -.1]} s={[.62, .84, .03]} rotation={[.2, 0, 0]} color="#6e4a2c" surface="wood" />
-    </group>
+    <SceneLink onOpen={onAbout}><group position={[1.2, .15, 2.0]} rotation={[0, .18, 0]}>
+      <Panel p={[0, .6, .1]} size={[.88, 1.06]} rotation={[-.2, 0, 0]} title="ABOUT" lines={'omniAI\nPRODUCT & TEAM\nEXPLORE →'} kind="light" color="#ecd8ad" ink="#283e39" frame="#6e4a2c" depth={.05} onClick={onAbout} back />
+      <Box p={[0, .55, -.14]} s={[.92, 1.12, .04]} rotation={[.2, 0, 0]} color="#6e4a2c" surface="wood" />
+    </group></SceneLink>
   </group>
 }
 
@@ -380,7 +380,7 @@ export default function NightWorld(props: Props) {
     <pointLight position={[4, 4.5, -1]} color="#766bfe" intensity={24} distance={8} />
     <Sky /><WetRoad tier={tier} />
     <Bake>
-      <Building onOpen={props.onOpen} still={props.still} /><Street onOpen={props.onOpen} /><StreetDetails still={props.still} />
+      <Building onOpen={props.onOpen} still={props.still} /><Street onOpen={props.onOpen} onAbout={props.onAbout} /><StreetDetails still={props.still} />
       <RoadMarks /><LessonMachine onOpen={() => props.onOpen('lessons')} /><Postbox /><CurveMirror />
     </Bake>
     <Unreflected><Rain still={props.still} /><Ripples still={props.still} /></Unreflected>

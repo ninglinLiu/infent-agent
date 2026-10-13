@@ -7,6 +7,7 @@ import { LanguageSwitch } from './LanguageSwitch'
 import { useAcademyLocale } from './useAcademyLocale'
 import { useAcademy } from './AcademyProvider'
 import { AcademyScene } from './ImmersiveScene'
+import { BackToStreet } from './BackToStreet'
 
 export function AcademyGate({ children, onExit }: { children: React.ReactNode; onExit?: () => void }) {
   const { state, ready, update, storageAvailable } = useAcademy()
@@ -19,7 +20,10 @@ export function AcademyGate({ children, onExit }: { children: React.ReactNode; o
   const story = STORY[Math.min(state.storyStep, STORY.length - 1)]
   const mentor = MENTORS[story.mentor]
   return <main className="academy-gate" data-reduced-motion={state.reducedMotion} data-stage={state.name && story.mentor === 'quant' ? 'hologram' : 'study'}>
-    <header className="academy-gate-header"><button onClick={onExit} className="academy-brand academy-back" aria-label={tr("返回雨夜街角", "Back to the rainy street")}><span className="academy-logomark">Ω</span>{BRAND.short}<span className="academy-brand-divider" />{tr("学习室", "Study room")}</button><div className="academy-gate-tools"><LanguageSwitch /><button className="academy-style-toggle" onClick={onExit}>{tr("返回街角 · Esc", "Back to street · Esc")}</button><button className="academy-style-toggle" onClick={() => update({ presentation: state.presentation === 'immersive' ? 'classic' : 'immersive' })}>{state.presentation === 'immersive' ? tr("对比插画版", "Try the illustrated view") : tr("体验 3D 版", "Try the 3D view")}</button><span className="academy-pill">{tr("交互演示", "Interactive demo")}</span></div></header>
+    <header className="academy-gate-header">
+      <div className="street-header-brand"><BackToStreet onExit={onExit} tone="paper" /><div className="academy-brand"><span className="academy-logomark">Ω</span>{BRAND.short}<span className="academy-brand-divider" />{tr("学习室", "Study room")}</div></div>
+      <div className="academy-gate-tools"><LanguageSwitch /><button className="academy-style-toggle" onClick={() => update({ presentation: state.presentation === 'immersive' ? 'classic' : 'immersive' })}>{state.presentation === 'immersive' ? tr("对比插画版", "Try the illustrated view") : tr("体验 3D 版", "Try the 3D view")}</button><span className="academy-pill">{tr("交互演示", "Interactive demo")}</span></div>
+    </header>
     <div className="academy-gate-grid">
       <section className="academy-gate-art">
         <div className="academy-art-kicker"><span /> A LITTLE WISER, EVERY DAY</div>

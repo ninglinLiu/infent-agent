@@ -4,6 +4,13 @@
 .night-scene:focus-visible { outline: 1px solid #ffabd1; outline-offset: -4px; }
 .night-console-overlay { position: fixed; inset: 0; z-index: 90; background: #070809; }
 .night-console { position: fixed; inset: 0; z-index: 91; outline: none; }
+.street-header-brand { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
+.street-return { display: inline-flex; align-items: center; justify-content: center; gap: 7px; flex-shrink: 0; min-height: 36px; padding: 8px 12px; border: 1px solid #668e91; border-radius: 8px; background: #173437; color: #e2fff5; font-size: 12px; font-weight: 600; line-height: 1.3; white-space: nowrap; text-decoration: none; cursor: pointer; transition: background .15s, border-color .15s; }
+.street-return:hover { background: #244b4b; border-color: #a5dbcb; }
+.street-return:focus-visible { outline: 3px solid #b1e8d5; outline-offset: 3px; }
+.academy-root .street-return { font-size: 12px; font-weight: 600; }
+.street-return--paper { background: #254d3f; border-color: #254d3f; color: #fff8e7; }
+.street-return--paper:hover { background: #376650; border-color: #376650; }
 .night-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; color: #acaabb; font-size: 13px; }
 .night-fallback button { border: 1px solid #87677e; border-radius: 4px; padding: 12px 22px; color: #f0bcd5; background: #251e2d; }
 @media (prefers-reduced-motion: reduce) { .night-study *, .night-console * { animation: none !important; transition: none !important; } }

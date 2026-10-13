@@ -1,6 +1,8 @@
 "use client"
 
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Component, useCallback, useEffect, useRef, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import type { NightDestination } from './night-navigation'
@@ -18,6 +20,7 @@ class NightBoundary extends Component<{ children: React.ReactNode; onFailure: ()
 }
 
 export function NightStudy() {
+  const router = useRouter()
   const { lang } = useLang()
   const tr = (zh: string, en: string) => lang === 'en' ? en : zh
   const [open, setOpen] = useState(false)
@@ -33,6 +36,11 @@ export function NightStudy() {
   const scene = useRef<HTMLDivElement>(null)
   const onReady = useCallback(() => setLoaded(true), [])
   const onFailure = useCallback(() => setFailed(true), [])
+  const openAbout = useCallback(() => {
+    if (timer.current) clearTimeout(timer.current)
+    document.body.style.cursor = ''
+    router.push('/')
+  }, [router])
 
   const enter = useCallback((next: NightDestination) => {
     setDestination(next)
@@ -64,17 +72,18 @@ export function NightStudy() {
   }, [])
 
   return <main className="night-study" data-scene-ready={loaded && !failed}>
-    <div ref={scene} className="night-scene" tabIndex={0} role="button" aria-label={tr("拖动旋转，滚轮缩放；点击 omniAI 进入工作台，学習室进入学习室；CASE FILES 售货机进入案例练习，LESSONS 售货机进入课程。Enter 打开 omniAI，L 打开学习室，C 打开案例，K 打开课程，Esc 还原视角", "Drag to rotate, scroll to zoom. Click omniAI for research, the study sign for the study room, CASE FILES for practice, or LESSONS for courses. Enter opens omniAI, L opens the study room, C opens cases, K opens lessons, Esc resets the view.")} onKeyDown={event => {
+    <div ref={scene} className="night-scene" tabIndex={0} role="button" aria-label={tr("拖动旋转，滚轮缩放；点击 omniAI 进入工作台，学習室进入学习室；CASE FILES 售货机进入案例练习，LESSONS 售货机进入课程，门口 ABOUT 立牌打开产品宣传页。Enter 打开 omniAI，L 打开学习室，C 打开案例，K 打开课程，A 打开宣传页，Esc 还原视角", "Drag to rotate, scroll to zoom. Click omniAI for research, the study sign for the study room, CASE FILES for practice, LESSONS for courses, or the ABOUT board for our product showcase. Enter opens omniAI, L opens the study room, C opens cases, K opens lessons, A opens the showcase, Esc resets the view.")} onKeyDown={event => {
       if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); enter('workspace') }
       if (event.key.toLowerCase() === 'l') { event.preventDefault(); enter('academy') }
       if (event.key.toLowerCase() === 'c') { event.preventDefault(); enter('practice') }
       if (event.key.toLowerCase() === 'k') { event.preventDefault(); enter('lessons') }
+      if (event.key.toLowerCase() === 'a') { event.preventDefault(); openAbout() }
       if (event.key === 'Escape') { setFocus(null); setReset(n => n + 1); if (timer.current) clearTimeout(timer.current) }
     }}>
-      {!failed && <NightBoundary onFailure={onFailure}><NightWorld onOpen={enter} still={still} active={active && !open} onReady={onReady} onFailure={onFailure} reset={reset} focus={focus} /></NightBoundary>}
+      {!failed && <NightBoundary onFailure={onFailure}><NightWorld onOpen={enter} onAbout={openAbout} still={still} active={active && !open} onReady={onReady} onFailure={onFailure} reset={reset} focus={focus} /></NightBoundary>}
     </div>
     {!loaded && !failed && <p className="sr-only" role="status">{tr("正在点亮 omniAI 与学习室", "Lighting up omniAI and the study room")}</p>}
-    {failed && <div className="night-fallback"><p>{tr("3D 场景暂不可用", "The 3D scene is unavailable")}</p><button onClick={() => enter('workspace')}>{tr("进入 omniAI 工作台", "Enter omniAI")}</button><button onClick={() => enter('academy')}>{tr("进入学习室", "Enter the study room")}</button></div>}
+    {failed && <div className="night-fallback"><p>{tr("3D 场景暂不可用", "The 3D scene is unavailable")}</p><button onClick={() => enter('workspace')}>{tr("进入 omniAI 工作台", "Enter omniAI")}</button><button onClick={() => enter('academy')}>{tr("进入学习室", "Enter the study room")}</button><Link href="/">{tr("了解 omniAI · 产品宣传页", "About omniAI · Product showcase")}</Link></div>}
     <Dialog.Root open={open} onOpenChange={close}>
       <Dialog.Portal>
         <Dialog.Overlay className="night-console-overlay" />

@@ -4,6 +4,7 @@ import { useDash } from "@/lib/dash-store"
 import { TOP_TICKERS } from "@/lib/mock/market"
 import { BRAND } from "@/lib/brand"
 import { useLang } from "@/lib/i18n"
+import { BackToStreet } from "@/components/academy/BackToStreet"
 import { Activity, Circle, Command, Languages, Moon, RotateCcw, Sun } from "lucide-react"
 
 function TickerRow() {
@@ -28,12 +29,13 @@ function TickerRow() {
   )
 }
 
-export function TopBar() {
+export function TopBar({ onExit }: { onExit: () => void }) {
   const { theme, setTheme, resetAll } = useDash()
   const { lang, setLang, t } = useLang()
   return (
     <header className="min-h-12 shrink-0 border-b border-[var(--line-1)] bg-[var(--bg-1)]/80 backdrop-blur-md flex items-center justify-between gap-2 px-2 sm:px-4">
-      <div className="flex min-w-0 items-center gap-2 xl:w-[360px]">
+      <div className="flex shrink-0 items-center gap-3">
+        <BackToStreet onExit={onExit} />
         <div className="relative shrink-0 h-7 w-7 rounded-md bg-gradient-to-br from-[#00ff9f] to-[#22d3ee] flex items-center justify-center">
           <span className="font-display text-[13px] font-bold text-black">Ω</span>
         </div>
@@ -42,7 +44,7 @@ export function TopBar() {
           <span
             className="hidden lg:block text-[10px] text-ghost tracking-[0.12em] truncate"
             title={BRAND.full}
-            style={{ maxWidth: 280 }}
+            style={{ maxWidth: 190 }}
           >
             {BRAND.full}
           </span>

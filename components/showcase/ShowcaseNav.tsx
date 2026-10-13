@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { BRAND } from "@/lib/brand"
 import { useLang, useT, type DictKey } from "@/lib/i18n"
 import { ArrowRight, Github, Languages } from "lucide-react"
+import { BackToStreet } from "@/components/academy/BackToStreet"
 
 const LINKS: { href: string; key: DictKey }[] = [
   { href: "#problem",     key: "showcase.nav.problem" },
@@ -33,6 +34,8 @@ export function ShowcaseNav() {
       }`}
     >
       <div className="sec-x h-14 flex items-center justify-between gap-4">
+        <div className="street-header-brand">
+        <BackToStreet />
         <Link href="/" className="flex items-center gap-2 group shrink-0">
           <div className="relative h-7 w-7 rounded-md bg-gradient-to-br from-[#00ff9f] to-[#22d3ee] flex items-center justify-center">
             <span className="font-display text-[13px] font-bold text-black">Ω</span>
@@ -42,6 +45,7 @@ export function ShowcaseNav() {
             <span className="text-[9px] text-[var(--fg-3)] uppercase tracking-[0.25em]">Omni · AI</span>
           </div>
         </Link>
+        </div>
 
         <div className="hidden md:flex items-center gap-6">
           {LINKS.map((l) => (

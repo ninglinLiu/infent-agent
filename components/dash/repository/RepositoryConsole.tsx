@@ -71,7 +71,7 @@ export function RepositoryConsole({ initialView, onExit }: { initialView: ViewId
   return (
     <ViewProvider initialView={initialView}>
         <div className="h-screen w-screen bg-[var(--bg-0)] text-[var(--fg-0)] flex flex-col overflow-hidden hud-grid">
-          <TopBar />
+          <TopBar onExit={onExit} />
           <div className="flex-1 flex min-h-0">
             <LeftRail onExit={onExit} />
             <div className="flex-1 min-w-0 flex flex-col min-h-0">
