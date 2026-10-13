@@ -4,12 +4,8 @@ import { createContext, useContext, useState } from "react"
 
 export type ViewId =
   | "workspace"
-  | "agent"
-  | "markets"
-  | "discover"
-  | "backtest"
-  | "risk"
-  | "journal"
+  | "learning"
+  | "simulation"
   | "settings"
 
 type ViewCtx = {
@@ -19,8 +15,8 @@ type ViewCtx = {
 
 const Ctx = createContext<ViewCtx | null>(null)
 
-export function ViewProvider({ children }: { children: React.ReactNode }) {
-  const [view, setView] = useState<ViewId>("workspace")
+export function ViewProvider({ children, initialView = 'workspace' }: { children: React.ReactNode; initialView?: ViewId }) {
+  const [view, setView] = useState<ViewId>(initialView)
   return <Ctx.Provider value={{ view, setView }}>{children}</Ctx.Provider>
 }
 

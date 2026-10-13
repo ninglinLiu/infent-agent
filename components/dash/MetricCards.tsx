@@ -94,7 +94,7 @@ export function MetricCards() {
   const { metrics } = useDash()
   const t = useT()
   return (
-    <div className="grid grid-cols-4 gap-2.5">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
       <MetricCard
         label={t("metric.nav")}
         value={metrics.nav}

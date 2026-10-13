@@ -1,10 +1,13 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useLang } from '@/lib/i18n'
+import { usePathname } from 'next/navigation'
+import { BRAND } from '@/lib/brand'
 
 type InstallEvent = Event & { prompt(): Promise<void>; userChoice: Promise<{ outcome: string }> }
 export function PwaInstall() {
   const { lang } = useLang()
+  const pathname = usePathname()
   const [install, setInstall] = useState<InstallEvent | null>(null)
   useEffect(() => {
     if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
@@ -19,9 +22,9 @@ export function PwaInstall() {
       window.removeEventListener('appinstalled', onInstalled)
     }
   }, [])
-  if (!install) return null
+  if (!install || pathname.startsWith('/dashboard')) return null
   return <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-xl border border-[var(--line-2)] bg-[var(--bg-2)] p-2 shadow-lg">
-    <button className="min-h-11 px-3 text-sm text-up" onClick={async () => { try { await install.prompt(); await install.userChoice } finally { setInstall(null) } }}>{lang === 'zh' ? '添加到桌面' : 'Install Infent'}</button>
+    <button className="min-h-11 px-3 text-sm text-up" onClick={async () => { try { await install.prompt(); await install.userChoice } finally { setInstall(null) } }}>{lang === 'zh' ? '添加到桌面' : `Install ${BRAND.short}`}</button>
     <button aria-label={lang === 'zh' ? '关闭安装提示' : 'Dismiss install prompt'} className="h-11 w-11 text-dim" onClick={() => setInstall(null)}>×</button>
   </div>
 }

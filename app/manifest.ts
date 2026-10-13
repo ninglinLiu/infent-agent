@@ -1,8 +1,9 @@
 import type { MetadataRoute } from 'next'
+import { BRAND } from '@/lib/brand'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Infent · Investment Research', short_name: 'Infent',
+    name: `${BRAND.short} · Investment Research`, short_name: BRAND.short,
     description: 'Investment research with verifiable data and sources.',
     id: '/', start_url: '/#live-agent', scope: '/', display: 'standalone',
     background_color: '#070809', theme_color: '#070809',

@@ -1,81 +1,26 @@
 "use client"
 
-import {
-  BarChart3,
-  Bot,
-  Compass,
-  FlaskConical,
-  Gauge,
-  History,
-  LayoutGrid,
-  Settings,
-  Sparkles,
-} from "lucide-react"
-import Link from "next/link"
-import { useView, type ViewId } from "./view-context"
-import { useT, type DictKey } from "@/lib/i18n"
+import { BookOpen, Compass, LayoutGrid, Settings, Sprout } from 'lucide-react'
+import { useView, type ViewId } from './view-context'
+import { useAcademy } from '@/components/academy/AcademyProvider'
+import { useAcademyLocale } from '@/components/academy/useAcademyLocale'
 
-const NAV: { id: ViewId; icon: typeof LayoutGrid; labelKey: DictKey }[] = [
-  { id: "workspace", icon: LayoutGrid,   labelKey: "rail.workspace" },
-  { id: "agent",     icon: Bot,          labelKey: "rail.agent" },
-  { id: "markets",   icon: BarChart3,    labelKey: "rail.markets" },
-  { id: "discover",  icon: Compass,      labelKey: "rail.discover" },
-  { id: "backtest",  icon: FlaskConical, labelKey: "rail.backtest" },
-  { id: "risk",      icon: Gauge,        labelKey: "rail.risk" },
-  { id: "journal",   icon: History,      labelKey: "rail.journal" },
-  { id: "settings",  icon: Settings,     labelKey: "rail.settings" },
+const NAV: { id: ViewId; icon: typeof LayoutGrid; label: string; en: string; sub: string }[] = [
+  { id: 'workspace', icon: LayoutGrid, label: '学习室', en: 'Study room', sub: 'STUDY ROOM' },
+  { id: 'learning', icon: BookOpen, label: '知识学习', en: 'Learning', sub: 'LEARN' },
+  { id: 'simulation', icon: Compass, label: '角色模拟', en: 'Role simulation', sub: 'PRACTICE' },
+  { id: 'settings', icon: Settings, label: '设置', en: 'Settings', sub: 'SETTINGS' },
 ]
 
 export function LeftRail() {
   const { view, setView } = useView()
-  const t = useT()
-
-  return (
-    <aside aria-label="Dashboard navigation" className="w-full md:w-14 shrink-0 border-b md:border-b-0 md:border-r border-[var(--line-1)] bg-[var(--bg-1)]/70 flex md:flex-col items-center overflow-x-auto md:overflow-visible px-2 md:px-0 py-1 md:py-3 gap-1">
-      <Link
-        href="/"
-        title={t("rail.back")}
-        className="hidden md:flex h-10 w-10 rounded-md items-center justify-center bg-gradient-to-br from-[#00ff9f] to-[#22d3ee] hover:brightness-110 transition mb-2"
-      >
-        <span className="font-display text-sm font-bold text-black">Ω</span>
-      </Link>
-
-      {NAV.map(({ id, icon: Icon, labelKey }) => {
-        const active = view === id
-        const label = t(labelKey)
-        return (
-          <button
-            key={id}
-            title={label}
-            aria-label={label}
-            aria-current={active ? 'page' : undefined}
-            onClick={() => setView(id)}
-            className={`relative h-11 min-w-11 shrink-0 md:w-10 rounded-md flex items-center justify-center transition ${
-              active
-                ? "bg-[var(--bg-3)] text-up ring-1 ring-[rgba(0,255,159,0.35)]"
-                : "text-[var(--fg-2)] hover:text-[var(--fg-0)] hover:bg-[var(--bg-3)]"
-            }`}
-          >
-            <Icon className="h-4 w-4" />
-            {active && <span className="absolute -left-[1px] top-2 bottom-2 w-[2px] bg-up rounded-r" />}
-            {id === "agent" && !active && (
-              <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-[#58c7ff] animate-pulse" />
-            )}
-          </button>
-        )
-      })}
-
-      <div className="flex-1" />
-
-      <div className="relative h-10 w-10 rounded-md hidden md:flex items-center justify-center text-info ai-pulse">
-        <Sparkles className="h-4 w-4" />
-      </div>
-      <div
-        className="hidden md:block mt-1 text-[9px] text-ghost"
-        style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
-      >
-        v2025.11
-      </div>
-    </aside>
-  )
+  const { state } = useAcademy()
+  const { tr } = useAcademyLocale()
+  const progress = Math.round((Math.min(state.lessonStep, 6) + Math.min(state.simulationStep, 4)) / 10 * 100)
+  return <aside className="academy-rail" aria-label="Dashboard navigation">
+    <div className="academy-rail-label">{tr('你的学习室', 'YOUR STUDY ROOM')}</div>
+    <nav>{NAV.map(({ id, icon: Icon, label, en, sub }) => <button key={id} aria-current={view === id ? 'page' : undefined} className={view === id ? 'active' : ''} onClick={() => setView(id)}><Icon size={19} /><span>{tr(label, en)}<small>{sub}</small></span>{view === id && <i />}</button>)}</nav>
+    <div className="academy-rail-progress"><Sprout size={27} /><strong>{tr('一点点，成为更好的自己。', 'A little wiser, every day.')}</strong><p>{tr('第一章 · 研究员的第一天', 'Chapter 1 · Your first day')}</p><div className="academy-progress-track" role="progressbar" aria-label={tr('章节进度', 'Chapter progress')} aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${progress}%` }} /></div><small>{progress}% {tr('已完成', 'complete')}</small></div>
+    <div className="academy-rail-foot">{tr('慢慢来，每一步都算数。', 'Take your time. Every step counts.')}</div>
+  </aside>
 }

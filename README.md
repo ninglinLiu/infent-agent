@@ -1,6 +1,17 @@
-# Infent · 可核对的投资研究 Agent
+# omniAI · 雨夜街角、研究工作台与学习室
 
 Next.js + TypeScript 的双语投资研究原型。首页和仪表盘接同一套真实模型、RAG 与只读工具；保留既有实时 K 线和教学模拟界面。
+
+## 一个主仓库
+
+后续产品开发统一在 [ninglinLiu/infent-agent](https://github.com/ninglinLiu/infent-agent)。雨夜入口、研究工作台和学习室属于同一个 Next.js 应用，共用语言偏好与服务端，不再为视觉版本创建独立仓库。
+
+- `/dashboard` 首屏只显示桌面 3D 雨夜建筑，拖动旋转、滚轮缩放。
+- 点击 **omniAI** 招牌进入研究工作台；点击 **学习室 / READ · THINK** 进入课程；**CASE FILES** 进入剧情模拟；**GitHub** 打开作者主页。
+- 学习室顶部 **English / 中文** 切换完整界面、序章、短课、导师提示和剧情模拟，与工作台共用 `omni.lang`。刷新保留语言，切换不改变学习进度。
+- [infent1.0](https://github.com/ninglinLiu/infent1.0) 保留原课程提交历史，不作为新产品开发入口。`infent-academy-3d.vercel.app` 是旧学院部署地址，并不是已确认的独立 GitHub 仓库。
+
+实现说明见 [雨夜入口](docs/NIGHT_STUDY.md) 与 [学院](docs/ACADEMY_DEMO.md)。代码推送不代表旧 Vercel 域名自动更新；生产部署应统一绑定主仓库。
 
 本次改造的实际测试结果、部署步骤与已知限制见 [P1 验收记录](docs/P1_VERIFICATION.md)。
 
@@ -28,7 +39,7 @@ npm run build:knowledge
 npm run dev
 ```
 
-首页 `/#live-agent` 可直接提问；`/dashboard` 的 Agent 标签提供同样的服务。无需模型密钥也能运行页面、离线评测和测试。
+首页 `/#live-agent` 可直接提问；`/dashboard` 点击 omniAI 后的 Agent 标签提供同样的服务。无需模型密钥也能运行页面、离线评测和测试。
 
 ```bash
 npm run typecheck
@@ -93,9 +104,9 @@ Windows 路径可以写成 `C:/Users/.../infent1.0/...`。服务端 stdout 只�
 
 这些是小规模开发回归集，**不是独立测试集上的模型质量、事实正确率或投资收益评测**。正文引用出现也不等于引用内容支持结论；上线前需人工检查回答。改提示词会触发 CI，语义效果需再运行真实模型评测。
 
-## 手机与 PWA
+## 桌面场景与 PWA
 
-首页和仪表盘按屏宽重排，手机顶部可横向切换功能，Agent 页面保留完整聊天输入区。生产构建提供 manifest、512px PNG 图标、Apple 图标和 Service Worker。
+雨夜街角与学习室按桌面使用场景开发，本轮不制作手机端。原展示首页保留已有适配。生产构建提供 manifest、512px PNG 图标、Apple 图标和 Service Worker；雨夜首屏隐藏安装浮层。
 
 Chrome/Edge 支持安装提示；iOS Safari 可用“分享 → 添加到主屏幕”。需要 HTTPS 或 localhost。Service Worker **只缓存离线提示页**，不缓存对话、地址查询、行情或持仓；离线时不会显示旧报价。
 

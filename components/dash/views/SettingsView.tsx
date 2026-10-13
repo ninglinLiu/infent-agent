@@ -1,151 +1,22 @@
 "use client"
 
-import { useState } from "react"
-import { useDash } from "@/lib/dash-store"
-import { Bell, Moon, Palette, Shield, Sun, User } from "lucide-react"
-import { BRAND } from "@/lib/brand"
+import { useState } from 'react'
+import { useAcademyLocale } from '@/components/academy/useAcademyLocale'
+import { Check, LogOut, RotateCcw, Settings, User, Wind } from 'lucide-react'
+import { useAcademy } from '@/components/academy/AcademyProvider'
+import { useView } from '../view-context'
 
-export function SettingsView() {
-  const { theme, setTheme } = useDash()
-  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark")
-  const [risk, setRisk] = useState(0.5)
-  const [horizon, setHorizon] = useState("mid")
-  const [notify, setNotify] = useState(true)
-
-  return (
-    <div className="h-full overflow-y-auto thin-scroll pr-1">
-      <div className="max-w-[1000px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card icon={User} title="Investor profile">
-          <Row k="Display name" v="Demo User" />
-          <Row k="Capital band" v="$100K – $500K" />
-          <Row k="Onboarding" v="Completed · 2025-11-01" />
-          <div className="mt-4">
-            <div className="text-[11px] text-dim mb-2">Risk tolerance · {Math.round(risk * 100)}</div>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.01}
-              value={risk}
-              onChange={(e) => setRisk(parseFloat(e.target.value))}
-              className="w-full accent-[#00ff9f]"
-            />
-            <div className="flex justify-between text-[10px] text-ghost mt-1">
-              <span>Conservative</span><span>Aggressive</span>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="text-[11px] text-dim mb-2">Investment horizon</div>
-            <div className="grid grid-cols-3 gap-1.5">
-              {["short", "mid", "long"].map((h) => (
-                <button
-                  key={h}
-                  onClick={() => setHorizon(h)}
-                  className={`py-2 rounded-md text-[12px] border transition ${
-                    horizon === h
-                      ? "border-up text-up bg-[rgba(0,255,159,0.08)]"
-                      : "border-[var(--line-1)] text-dim hover:text-white"
-                  }`}
-                >
-                  {h}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Card>
-
-        <Card icon={Palette} title="Appearance">
-          <Row k="Theme" v={theme === "dark" ? "Dark (default)" : "Light"} />
-          <button
-            onClick={toggleTheme}
-            className="mt-2 inline-flex items-center gap-2 rounded-md px-4 py-2 text-[12px] font-semibold border border-[var(--line-1)] hover:bg-[var(--bg-3)] transition"
-          >
-            {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-            Toggle theme
-          </button>
-          <div className="mt-6">
-            <div className="text-[11px] text-dim mb-2">Accent palette</div>
-            <div className="flex gap-2">
-              {["#00ff9f", "#22d3ee", "#ff6aa8", "#ffb547", "#8b5cf6"].map((c) => (
-                <div
-                  key={c}
-                  className="h-8 w-8 rounded-md cursor-pointer ring-1 ring-white/10 hover:ring-white/40 transition"
-                  style={{ background: c }}
-                />
-              ))}
-            </div>
-          </div>
-        </Card>
-
-        <Card icon={Bell} title="Notifications">
-          <Toggle
-            label="Daily AI Alpha brief"
-            hint="07:30 delivery · email + in-app"
-            v={notify}
-            onChange={setNotify}
-          />
-          <Toggle label="Stop-loss triggered" hint="Immediate push" v={true} onChange={() => {}} />
-          <Toggle label="Portfolio drift > 5%" hint="Rebalance reminder" v={true} onChange={() => {}} />
-          <Toggle label="Community signals" hint="Top-0.1% trader moves" v={false} onChange={() => {}} />
-        </Card>
-
-        <Card icon={Shield} title="Account & security">
-          <Row k="Broker" v="Demo paper account" />
-          <Row k="API key" v="····-····-····-8c93" />
-          <Row k="Two-factor auth" v="On · Authenticator app" />
-          <Row k="Data region" v="Singapore" />
-          <div className="mt-4 text-[11px] text-ghost">
-            Project: {BRAND.full}
-          </div>
-          <div className="text-[11px] text-ghost">{BRAND.team}</div>
-        </Card>
-      </div>
+export function SettingsView({ nightMode = false, onExit }: { nightMode?: boolean; onExit?: () => void }) {
+  const { state, update, logout, storageAvailable } = useAcademy()
+  const { setView } = useView()
+  const { tr, lang, setLang, displayName } = useAcademyLocale()
+  const [name, setName] = useState(state.name)
+  const [saved, setSaved] = useState(false)
+  return <div className="academy-page academy-settings"><div className="academy-page-heading"><div><div className="academy-eyebrow">MAKE YOURSELF AT HOME</div><h1>{tr("按你的节奏来。", "Make this space your own.")}</h1><p>{tr("一点简单的设置，让这里更适合你。", "A few simple settings to help you feel at home.")}</p></div><Settings size={26} /></div>
+    <div className="academy-settings-grid">
+      <section className="academy-settings-card"><div className="academy-settings-title"><User size={20} /><h2>{tr("研究员档案", "Researcher profile")}</h2></div><form onSubmit={e => { e.preventDefault(); update({ name: name.trim() || '新晋研究员' }); setSaved(true) }}><label htmlFor="profile-name">{tr("昵称", "Nickname")}</label><input id="profile-name" maxLength={20} value={name === '新晋研究员' || name === 'New researcher' ? displayName : name} onChange={e => { setName(e.target.value); setSaved(false) }} /><button className="academy-secondary" type="submit">{saved ? <><Check size={16} />{tr("已保存", "Saved")}</> : tr("保存昵称", "Save nickname")}</button></form><div className="academy-settings-row"><span>{tr("账户类型", "Account type")}</span><strong>{tr("本地演示账户", "Local demo account")}</strong></div><div className="academy-settings-row"><span>{tr("知识学习", "Lessons")}</span><strong>{Math.floor(state.lessonStep / 2)} / 3 {tr("节", "lessons")}</strong></div><div className="academy-settings-row"><span>{tr("模拟实践", "Practice")}</span><strong>{state.simulationStep >= 4 ? tr("已完成", "Complete") : `${state.simulationStep} / 4 ${tr("步", "steps")}`}</strong></div></section>
+      <section className="academy-settings-card"><div className="academy-settings-title"><Wind size={20} /><h2>{tr("动画与阅读", "Motion and reading")}</h2></div><h3>{tr("界面语言", "Interface language")}</h3><div className="academy-presentation-options" aria-label={tr("界面语言", "Interface language")}><button aria-pressed={lang === "zh"} onClick={() => setLang("zh")}>中文</button><button aria-pressed={lang === "en"} onClick={() => setLang("en")}>English</button></div><p className="academy-caption">{tr("与 omniAI 共用语言选择，学习进度保持不变。", "Shared with omniAI. Your learning progress stays the same.")}</p><div className="academy-settings-divider" />{!nightMode && <><h3>{tr("场景风格", "Scene style")}</h3><div className="academy-presentation-options" aria-label={tr("场景风格", "Scene style")}><button aria-pressed={state.presentation === 'immersive'} onClick={() => update({ presentation: 'immersive' })}>{tr("3D 沉浸版", "Immersive 3D")}</button><button aria-pressed={state.presentation === 'classic'} onClick={() => update({ presentation: 'classic' })}>{tr("轻量插画版", "Lightweight illustration")}</button></div></>}<div className="academy-setting-toggle"><div><strong>{tr("减少动态效果", "Reduce motion")}</strong><p>{nightMode ? tr("暂停雨丝、涟漪和镜头动画，更安静地阅读。", "Pause rain, ripples, and camera animation for quieter reading.") : tr("关闭人物浮动与场景过渡，更安静地阅读。", "Stop character movement and scene transitions for quieter reading.")}</p></div><button type="button" role="switch" aria-label={tr("减少动态效果", "Reduce motion")} aria-checked={state.reducedMotion} className={`academy-switch ${state.reducedMotion ? 'on' : ''}`} onClick={() => update({ reducedMotion: !state.reducedMotion })}><span /></button></div><p className="academy-caption">{tr("默认也会跟随设备的“减少动态效果”偏好。", "Your device’s reduced motion preference is also respected.")}</p>{!nightMode && <><div className="academy-settings-divider" /><h3>{tr("回到故事开始的地方", "Return to the beginning")}</h3><p>{tr("重播序章会保留已完成的课程和模拟记录。", "Replay the prologue without losing lesson or simulation progress.")}</p><button className="academy-secondary" onClick={() => { update({ storyStep: 0 }); setView('workspace') }}><RotateCcw size={15} />{tr("重播开场故事", "Replay the opening story")}</button></>}</section>
+      <section className="academy-settings-card academy-settings-wide"><div><h2>{tr("这是一间供你练习的学习室。", "A study room for practice.")}</h2><p>{storageAvailable ? tr("昵称、剧情与学习进度只保存在当前浏览器。", "Your nickname, story, and learning progress are stored only in this browser. ") : tr("浏览器不允许保存进度，刷新后可能丢失。", "Your browser cannot save progress. Refreshing may lose your work. ")}{tr("没有真实身份验证，也没有绑定交易账户。退出会清除本次演示的昵称与进度。", "There is no identity verification or linked trading account. Signing out clears this demo’s nickname and progress.")}</p></div><button className="academy-secondary" onClick={() => { setView('workspace'); logout(); onExit?.() }}><LogOut size={16} />{tr("退出并清除进度", "Sign out and clear progress")}</button></section>
     </div>
-  )
-}
-
-function Card({
-  icon: Icon, title, children,
-}: { icon: any; title: string; children: React.ReactNode }) {
-  return (
-    <div className="surface p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <Icon className="h-3.5 w-3.5 text-info" />
-        <span className="text-[11px] uppercase tracking-wider text-dim">{title}</span>
-      </div>
-      {children}
-    </div>
-  )
-}
-
-function Row({ k, v }: { k: string; v: string }) {
-  return (
-    <div className="flex items-center justify-between py-1.5 border-b border-[var(--line-1)] last:border-b-0">
-      <span className="text-[12px] text-dim">{k}</span>
-      <span className="text-[13px] text-white tabular">{v}</span>
-    </div>
-  )
-}
-
-function Toggle({
-  label, hint, v, onChange,
-}: { label: string; hint?: string; v: boolean; onChange: (b: boolean) => void }) {
-  return (
-    <div className="flex items-center justify-between py-2 border-b border-[var(--line-1)] last:border-b-0">
-      <div>
-        <div className="text-[13px]">{label}</div>
-        {hint && <div className="text-[11px] text-ghost">{hint}</div>}
-      </div>
-      <button
-        onClick={() => onChange(!v)}
-        className={`relative h-5 w-9 rounded-full transition ${v ? "bg-up" : "bg-[var(--bg-3)]"}`}
-      >
-        <span
-          className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${
-            v ? "left-[18px]" : "left-0.5"
-          }`}
-        />
-      </button>
-    </div>
-  )
+  </div>
 }

@@ -17,35 +17,28 @@ test('landing chat renders real transport safely, exposes evidence, and fits vie
   const button = await section.locator('button[type=submit]').boundingBox()
   const viewport = page.viewportSize()!
   expect(button!.x + button!.width).toBeLessThanOrEqual(viewport.width)
-  await page.screenshot({ path: `test-results/landing-${test.info().project.name}.png`, fullPage: false })
+  await page.screenshot({ animations: 'disabled', path: `test-results/landing-${test.info().project.name}.png`, fullPage: false })
 })
 
-test('dashboard navigation and Agent composer are usable at this viewport', async ({ page }) => {
-  // This test exercises layout; API behavior is covered separately.
+test('desktop house opens the repository console and preserves its navigation', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop', 'The night study is desktop only')
   await page.route('**/api/market/**', route => route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"Test fixture unavailable"}' }))
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
   await page.goto('/dashboard')
-  const headerGroups = page.locator('header > div')
-  const brand = await headerGroups.first().boundingBox()
-  const controls = await headerGroups.last().boundingBox()
-  expect(brand!.x + brand!.width).toBeLessThanOrEqual(controls!.x)
-  if (page.viewportSize()!.width < 640) {
-    await expect(page.locator('header').getByRole('button')).toHaveCount(2)
-    await expect(page.locator('header').getByRole('button', { name: /重置|Reset/ })).not.toBeVisible()
+  await page.locator('.night-scene').press('Enter')
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await expect(page.locator('[data-view="workspace"]')).toBeVisible()
+  await expect(page.locator('input[maxlength="4000"]')).toBeVisible()
+  for (const view of ['backtest', 'risk', 'journal', 'settings']) {
+    const labels = { backtest: /^(回测|Backtest)$/, risk: /^(风控|Risk)$/, journal: /^(交易日志|Journal)$/, settings: /^(设置|Settings)$/ }
+    await page.getByRole('button', { name: labels[view as keyof typeof labels] }).click()
+    await expect(page.locator(`[data-view="${view}"]`)).toBeVisible()
   }
-  const nav = page.locator('aside[aria-label="Dashboard navigation"]')
-  const agentButton = nav.getByRole('button').nth(1)
-  await agentButton.scrollIntoViewIfNeeded()
-  await agentButton.click()
-  const view = page.locator('[data-view="agent"]')
-  await expect(view).toHaveCSS('opacity', '1')
-  const input = view.locator('input[maxlength="4000"]')
-  await expect(input).toBeVisible()
-  await input.fill('How does risk budgeting work?')
-  const rect = await input.boundingBox()
-  expect(rect!.width).toBeGreaterThan(100)
-  expect(rect!.x + rect!.width).toBeLessThanOrEqual(page.viewportSize()!.width)
+  await page.getByRole('button', { name: '返回雨夜街角', exact: true }).click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
-  await page.screenshot({ path: `test-results/dashboard-${test.info().project.name}.png`, fullPage: false })
+  expect(errors).toEqual([])
 })
 
 test('PWA exposes PNG icon, installs a worker and serves its offline notice', async ({ page, context, request }) => {
@@ -61,4 +54,43 @@ test('PWA exposes PNG icon, installs a worker and serves its offline notice', as
   await page.goto('/dashboard')
   await expect(page.getByRole('heading', { name: /You are offline/ })).toBeVisible()
   await context.setOffline(false)
+})
+
+
+test('learning room keeps lessons and mentors without duplicating the financial console', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop', 'The night study is desktop only')
+  await page.goto('/dashboard')
+  await page.locator('.night-scene').press('l')
+  const room = page.locator('.academy-room')
+  await expect(room).toBeVisible()
+  await page.getByRole('button', { name: '以研究员身份进入' }).click()
+  for (const name of ['接过研究员手册', '了解今天的任务', '进入学习室']) {
+    await page.getByRole('button', { name, exact: true }).click()
+  }
+  await expect(room.locator('[data-academy-view="workspace"]')).toBeVisible()
+  await expect(room.locator('a[href*="tradingview"], input[maxlength="4000"]')).toHaveCount(0)
+  await expect(room.getByText('组合净值', { exact: true })).toHaveCount(0)
+  await page.getByRole('button', { name: '开始第一节短课' }).click()
+  await expect(room.getByRole('heading', { name: '价格，不等于价值', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: /先检查企业经营是否发生变化/ }).click()
+  await page.getByRole('button', { name: '继续下一节' }).click()
+  await page.keyboard.press('Escape')
+  await page.locator('.night-scene').press('l')
+  await page.getByRole('button', { name: /知识学习/ }).click()
+  await expect(room.getByRole('heading', { name: '先想清楚，能承受多少', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Switch to English', exact: true }).click()
+  await expect(room.getByRole('heading', { name: 'Know how much you can risk', exact: true })).toBeVisible()
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  await page.reload()
+  await page.locator('.night-scene').press('l')
+  await page.getByRole('button', { name: /^Learning/ }).click()
+  await expect(room.getByRole('heading', { name: 'Know how much you can risk', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: '切换到中文', exact: true }).click()
+  await page.getByRole('button', { name: /角色模拟/ }).click()
+  await page.getByRole('button', { name: '和导师打个招呼', exact: true }).click()
+  await expect(room.getByRole('status')).toContainText('你好，研究员')
+  await page.getByRole('button', { name: '返回雨夜街角', exact: true }).click()
+  await page.locator('.night-scene').press('Enter')
+  await expect(page.locator('[data-view="workspace"]')).toBeVisible()
+  await expect(page.locator('.academy-room')).toHaveCount(0)
 })

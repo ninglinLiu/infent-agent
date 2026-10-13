@@ -197,9 +197,12 @@ export function LangProvider({ children, initial = "zh" }: { children: React.Rea
     setLangState(l)
     try {
       window.localStorage.setItem(STORAGE_KEY, l)
-      document.documentElement.setAttribute("lang", l === "en" ? "en" : "zh-CN")
     } catch {}
   }, [])
+
+  useEffect(() => {
+    document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN'
+  }, [lang])
 
   const toggle = useCallback(() => {
     setLang(lang === "zh" ? "en" : "zh")
