@@ -7,7 +7,7 @@ Next.js + TypeScript 的双语投资研究原型。首页和仪表盘接同一�
 后续产品开发统一在 [ninglinLiu/infent-agent](https://github.com/ninglinLiu/infent-agent)。雨夜入口、研究工作台和学习室属于同一个 Next.js 应用，共用语言偏好与服务端，不再为视觉版本创建独立仓库。
 
 - `/dashboard` 首屏只显示桌面 3D 雨夜建筑，拖动旋转、滚轮缩放。
-- 点击 **omniAI** 招牌进入研究工作台；点击 **学习室 / READ · THINK** 进入课程；**CASE FILES** 进入剧情模拟；**GitHub** 打开作者主页。
+- 点击 **omniAI** 招牌进入研究工作台；点击 **学習室 / READ & THINK** 进入学习室；蓝色 **CASE FILES** 售货机进入剧情练习，红色 **LESSONS** 售货机进入短课；**GitHub** 打开作者主页。雨夜首屏保留独立房子与屋顶圣诞树，不显示背景楼群或路面文字。
 - 学习室顶部 **English / 中文** 切换完整界面、序章、短课、导师提示和剧情模拟，与工作台共用 `omni.lang`。刷新保留语言，切换不改变学习进度。
 - [infent1.0](https://github.com/ninglinLiu/infent1.0) 保留原课程提交历史，不作为新产品开发入口。`infent-academy-3d.vercel.app` 是旧学院部署地址，并不是已确认的独立 GitHub 仓库。
 

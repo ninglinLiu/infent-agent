@@ -28,6 +28,7 @@ export function NightStudy() {
   const [reset, setReset] = useState(0)
   const [focus, setFocus] = useState<NightDestination | null>(null)
   const [destination, setDestination] = useState<NightDestination>('workspace')
+  const inAcademy = destination === 'academy' || destination === 'practice' || destination === 'lessons'
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const scene = useRef<HTMLDivElement>(null)
   const onReady = useCallback(() => setLoaded(true), [])
@@ -63,9 +64,11 @@ export function NightStudy() {
   }, [])
 
   return <main className="night-study" data-scene-ready={loaded && !failed}>
-    <div ref={scene} className="night-scene" tabIndex={0} role="button" aria-label={tr("拖动旋转，滚轮缩放；点击 omniAI 进入工作台，点击学习室进入课程；Enter 打开 omniAI，L 打开学习室，Esc 还原视角", "Drag to rotate, scroll to zoom. Click omniAI for research or the study sign for lessons. Enter opens omniAI, L opens the study room, Esc resets the view.")} onKeyDown={event => {
+    <div ref={scene} className="night-scene" tabIndex={0} role="button" aria-label={tr("拖动旋转，滚轮缩放；点击 omniAI 进入工作台，学習室进入学习室；CASE FILES 售货机进入案例练习，LESSONS 售货机进入课程。Enter 打开 omniAI，L 打开学习室，C 打开案例，K 打开课程，Esc 还原视角", "Drag to rotate, scroll to zoom. Click omniAI for research, the study sign for the study room, CASE FILES for practice, or LESSONS for courses. Enter opens omniAI, L opens the study room, C opens cases, K opens lessons, Esc resets the view.")} onKeyDown={event => {
       if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); enter('workspace') }
       if (event.key.toLowerCase() === 'l') { event.preventDefault(); enter('academy') }
+      if (event.key.toLowerCase() === 'c') { event.preventDefault(); enter('practice') }
+      if (event.key.toLowerCase() === 'k') { event.preventDefault(); enter('lessons') }
       if (event.key === 'Escape') { setFocus(null); setReset(n => n + 1); if (timer.current) clearTimeout(timer.current) }
     }}>
       {!failed && <NightBoundary onFailure={onFailure}><NightWorld onOpen={enter} still={still} active={active && !open} onReady={onReady} onFailure={onFailure} reset={reset} focus={focus} /></NightBoundary>}
@@ -76,10 +79,10 @@ export function NightStudy() {
       <Dialog.Portal>
         <Dialog.Overlay className="night-console-overlay" />
         <Dialog.Content className="night-console" onCloseAutoFocus={event => { event.preventDefault(); scene.current?.focus({ preventScroll: true }) }}>
-          <Dialog.Title className="sr-only">{destination === 'academy' || destination === 'practice' ? tr("omniAI 学习室", "omniAI Study room") : tr("omniAI 工作台", "omniAI Workspace")}</Dialog.Title>
+          <Dialog.Title className="sr-only">{inAcademy ? tr("omniAI 学习室", "omniAI Study room") : tr("omniAI 工作台", "omniAI Workspace")}</Dialog.Title>
           <Dialog.Description className="sr-only">{tr("omniAI 提供行情与 AI 研究，学习室提供导师、短课与剧情模拟。按 Esc 或点击返回按钮回到房子。", "omniAI offers market data and AI research. The study room offers mentors, lessons, and a guided simulation. Press Esc or use the back button to return to the building.")}</Dialog.Description>
-          {destination === 'academy' || destination === 'practice'
-            ? <AcademyConsole initialView={destination === 'practice' ? 'simulation' : 'workspace'} onExit={() => close(false)} />
+          {destination === 'academy' || destination === 'practice' || destination === 'lessons'
+            ? <AcademyConsole initialView={destination === 'practice' ? 'simulation' : destination === 'lessons' ? 'learning' : 'workspace'} onExit={() => close(false)} />
             : <RepositoryConsole initialView={destination} onExit={() => close(false)} />}
         </Dialog.Content>
       </Dialog.Portal>
