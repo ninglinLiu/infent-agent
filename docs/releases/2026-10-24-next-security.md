@@ -39,6 +39,16 @@ vercel rollback dpl_3ugg8Vs23PktDmXuaQA3ZrnG3vZf --yes --scope 123lkflhdskjfs-pr
 
 证据：[真实 Auth/REST](../collab/learning-live-validation/auth-rest-result.json)、[真实浏览器](../collab/learning-live-validation/browser-result.json)、[中文小屋](../collab/visual-restoration/house-zh.png)、[英文 AI](../collab/visual-restoration/agent-en.png)。失败的首轮 3D 检查未发布，也没有删除或降低断言来让测试通过。
 
-最终源码 SHA、部署 ID、生产验收及数据比较将在发布完成后补充。
+## 已完成的生产发布
+
+- 2026-10-24 23:36（Asia/Taipei）完成，正式站点：<https://omniaihello.com>。
+- 发布源码：`8589c2a3828944edcdf0c42d3ba3aa3e041cb5e3`；tag：`v2026.10.24.2`。
+- 新部署：`dpl_6CzYjeEB4mjVh6ma5EWUKNzbVZy5`，Ready；URL：<https://infent-agent-7sqg6jtaq-123lkflhdskjfs-projects.vercel.app>。inspect 主域名确认已指向它，releaseCommit 与实际 Git SHA 一致。
+- [GitHub Actions](https://github.com/ninglinLiu/infent-agent/actions/runs/40107429330) 的 regression 完整通过：Linux 干净 `npm ci`、安全审计、类型、lint、27 项测试、30 项离线评测和生产构建。付费模型任务按条件跳过。
+- Vercel 使用 `--force --prod --skip-domain`，确认日志跳过旧缓存、重新安装依赖、识别 Next.js 15.5.28 并构建成功。候选登录/访客表单、根路径 307 和个人接口 401 检查通过后才 promote。
+- 正式浏览器只读验收通过：中英文注册入口、免邮箱确认配置、生产 Supabase 指向、实际 3D 小屋就绪、访客进入、www 308、5 个个人 API 未登录 401、本地测试文件 URL 404，浏览器运行错误 0。[线上验收 JSON](2026-10-24-next-security-production-smoke.json)。
+- 发布前后 9 组数据数量及摘要完全一致：原 7 用户、7 资料、4 会话、8 消息、1 学习进度保留，其余用户业务表保持原状态。[数据比较 JSON](2026-10-24-next-security-data-check.json)。无迁移、无生产写入；生产 allow_demo=false、A/B/C 账号 0、demo 权益 0。
+- 发布后重新 inspect 确认回滚目标 `dpl_3ugg8Vs23PktDmXuaQA3ZrnG3vZf` 仍 Ready，旧 tag `v2026.10.24.1` 保持原 SHA。未切换正式流量进行回滚演练。
+- PR 继续使用 [#2](https://github.com/ninglinLiu/infent-agent/pull/2)，未合并 main；发布后的证据补充另行 commit/push，不移动已发布源码 tag。
 
 全项目仍有与本次 Next 依赖链无关的 **18 项**历史告警（11 high、7 moderate），例如 MCP SDK 和部分工具依赖。本次未声称整个依赖树零漏洞；没有关闭审计。真实模型质量与付费调用不在本次验证范围。

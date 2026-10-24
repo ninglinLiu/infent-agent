@@ -1,0 +1,100 @@
+{
+  "project": "bofqqjgdkubmjdnpalqq",
+  "before": [
+    {
+      "entity": "users",
+      "rows": 7,
+      "digest": "96cbceab3a58f02823035d893dea44cd"
+    },
+    {
+      "entity": "profiles",
+      "rows": 7,
+      "digest": "cb812722100478e08b2a27792d3a56ef"
+    },
+    {
+      "entity": "conversations",
+      "rows": 4,
+      "digest": "734659a09f50ebac106b642f9d1add67"
+    },
+    {
+      "entity": "messages",
+      "rows": 8,
+      "digest": "e961429b57144f9227151d8299e00048"
+    },
+    {
+      "entity": "learning_progress",
+      "rows": 1,
+      "digest": "913dc6881fe74b50bf5f1f8f0b547bd0"
+    },
+    {
+      "entity": "watchlist_items",
+      "rows": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "entity": "learning_attempts",
+      "rows": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "entity": "learning_choices",
+      "rows": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "entity": "course_entitlements",
+      "rows": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+  ],
+  "after": [
+    {
+      "entity": "users",
+      "rows": 7,
+      "digest": "96cbceab3a58f02823035d893dea44cd"
+    },
+    {
+      "entity": "profiles",
+      "rows": 7,
+      "digest": "cb812722100478e08b2a27792d3a56ef"
+    },
+    {
+      "entity": "conversations",
+      "rows": 4,
+      "digest": "734659a09f50ebac106b642f9d1add67"
+    },
+    {
+      "entity": "messages",
+      "rows": 8,
+      "digest": "e961429b57144f9227151d8299e00048"
+    },
+    {
+      "entity": "learning_progress",
+      "rows": 1,
+      "digest": "913dc6881fe74b50bf5f1f8f0b547bd0"
+    },
+    {
+      "entity": "watchlist_items",
+      "rows": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "entity": "learning_attempts",
+      "rows": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "entity": "learning_choices",
+      "rows": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "entity": "course_entitlements",
+      "rows": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+  ],
+  "unchanged": true,
+  "productionWritesPerformed": false,
+  "migrationsApplied": false
+}
