@@ -8,14 +8,22 @@ import { useChatStream, type WireMessage } from "@/lib/ai/use-chat-stream"
 import type { ChatMeta } from "@/lib/ai/protocol"
 import { AnswerText } from "@/components/agent/AnswerText"
 import { ToolEvidence } from "@/components/agent/ToolEvidence"
+import { useAccount } from '@/components/account/AccountProvider'
+import { RequireAccount } from '@/components/account/AccountAccess'
 
 type Message = WireMessage & { id: string; meta?: ChatMeta | null }
 
 export function LiveAgentSection() {
+  const { user } = useAccount()
+  return <div id="live-agent"><RequireAccount><SignedInLiveAgent key={user?.id} /></RequireAccount></div>
+}
+
+function SignedInLiveAgent() {
   const { lang } = useLang()
   const zh = lang === "zh"
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
+  const [conversationId, setConversationId] = useState<string>()
   const scrollRef = useRef<HTMLDivElement>(null)
   const { send, stop, streaming } = useChatStream()
   const suggestions = zh
@@ -34,13 +42,14 @@ export function LiveAgentSection() {
     setMessages(prev => [...prev, { id: crypto.randomUUID(), role: "user", content: text }, { id, role: "assistant", content: "" }])
     setInput("")
     await send(history, {
+      conversationId, onConversation: setConversationId,
       lang, surface: "public landing page",
       onText: content => setMessages(prev => prev.map(m => m.id === id ? { ...m, content } : m)),
       onDone: (content, meta) => setMessages(prev => prev.map(m => m.id === id ? { ...m, content, meta } : m)),
     })
   }
 
-  return <section id="live-agent" className="relative overflow-hidden py-16 sm:py-24">
+  return <section className="relative overflow-hidden py-16 sm:py-24">
     <Orbs variant="default" />
     <div className="relative z-10 sec-x">
       <span className="chip-pill mb-6 text-[11px]">{zh ? "研究助手 · 现在试一问" : "Research assistant · try it here"}</span>

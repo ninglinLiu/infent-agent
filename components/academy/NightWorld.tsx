@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei/core/OrbitControls'
-import { MeshReflectorMaterial } from '@react-three/drei/core/MeshReflectorMaterial'
 import * as THREE from 'three'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass.js'
@@ -11,7 +10,7 @@ import { CopyShader } from 'three/examples/jsm/shaders/CopyShader.js'
 import type { NightDestination } from './night-navigation'
 import { AMBER, Bake, Books, Box, Cable, CYAN, Glow, Lantern, Panel, PINK, Pipe, Plant, SceneLink, UNREFLECTED, Unreflected, type V3 } from './night-parts'
 import { Abacus, ChristmasTree, CurveMirror, LessonMachine, Maneki, Postbox, RoadMarks } from './NightDistrict'
-import { shojiTexture, surfaceTexture, texture } from './night-textures'
+import { shojiTexture, texture } from './night-textures'
 
 type Props = { onOpen: (view: NightDestination) => void; onAbout: () => void; still: boolean; active: boolean; onReady: () => void; onFailure: () => void; reset: number; focus: NightDestination | null }
 type Tier = 'high' | 'mid' | 'low'
@@ -25,7 +24,7 @@ function Shoji({ p, size }: { p: V3; size: [number, number] }) {
 function Noren({ still }: { still: boolean }) {
   const group = useRef<THREE.Group>(null)
   useFrame(({ clock }) => { group.current?.children.forEach((child, i) => { child.rotation.x = still ? 0 : Math.sin(clock.elapsedTime * 1.2 + i) * .05 }) })
-  return <group ref={group} userData={{ live: true }}>{['READ', 'THINK', 'BUILD'].map((ch, i) => <group key={ch} position={[-1.15 + i * 1.15, 2.46, 1.3]}><Panel p={[0, -.16, 0]} size={[1.1, .32]} title={ch} kind="plate" color="#1d2c55" ink="#f3efe6" frame={null} /></group>)}</group>
+  return <group ref={group} userData={{ live: true }}>{['READ', 'THINK', 'BUILD'].map((ch, i) => <group key={ch} position={[-1.15 + i * 1.15, 2.46, 1.3]}><Panel p={[0, -.16, 0]} size={[1.1, .32]} title={ch} kind="plate" color="#4a3327" ink="#f3efe6" frame={null} /></group>)}</group>
 }
 
 function Building({ onOpen, still }: Pick<Props, 'onOpen' | 'still'>) {
@@ -48,7 +47,7 @@ function Building({ onOpen, still }: Pick<Props, 'onOpen' | 'still'>) {
     <Box p={[0, 4.45, 1.23]} s={[3.5, .055, .15]} color="#293340" />
     <Box p={[0, 4.45, 1.2]} s={[3.5, 1.79, .03]} color="#967771" />
     <Shoji p={[-.67, 4.65, 1.232]} size={[2.1, 1.25]} />
-    <Box p={[1.13, 4.45, 1.235]} s={[.94, 1.77, .012]} color="#35476d" glow="#273e71" />
+    <Box p={[1.13, 4.45, 1.235]} s={[.94, 1.77, .012]} color="#70523d" glow="#63432c" />
     {[-.65, .62].map(x => <Box key={x} p={[x, 4.45, 1.29]} s={[.055, 1.8, .08]} color="#262d39" />)}
     <Box p={[0, 4.37, 1.28]} s={[3.55, .055, .08]} color="#33313a" />
     <Box p={[-.58, 3.69, 1.39]} s={[2.24, .1, .44]} color="#39454c" />
@@ -64,11 +63,11 @@ function Building({ onOpen, still }: Pick<Props, 'onOpen' | 'still'>) {
     <Box p={[1.987, 3.8, -.6]} s={[.05, 3.2, .065]} color="#788181" />
     <Box p={[2.02, 2.15, -.6]} s={[.16, .45, .4]} color="#797679" />
     {/* Main neon, striped cloth canopy and a short indigo noren. */}
-    <Panel p={[0, 3.14, 1.61]} size={[3.77, .83]} title="omniAI" sub="RESEARCH · IDEAS · DISCOVERY" color={PINK} onClick={() => onOpen('workspace')} />
+    <Panel p={[0, 3.14, 1.61]} size={[3.77, .83]} title="omniAI" sub="YOUR FINANCIAL AGENT" color={PINK} onClick={() => onOpen('workspace')} />
     <group position={[0, 2.46, 1.45]} rotation={[.23, 0, 0]}>
-      <Box p={[0, 0, 0]} s={[4.25, .09, 1.3]} color="#275966" />
-      {Array.from({ length: 11 }, (_, i) => <Box key={i} p={[-1.94 + i * .387, .055, 0]} s={[.18, .018, 1.3]} color="#53727e" shadow={false} />)}
-      <Box p={[0, -.13, .65]} s={[4.25, .27, .035]} color="#315868" />
+      <Box p={[0, 0, 0]} s={[4.25, .09, 1.3]} color="#e3bd9d" />
+      {Array.from({ length: 11 }, (_, i) => <Box key={i} p={[-1.94 + i * .387, .055, 0]} s={[.18, .018, 1.3]} color="#fffbf5" shadow={false} />)}
+      <Box p={[0, -.13, .65]} s={[4.25, .27, .035]} color="#d7ac8c" />
     </group>
     <Noren still={still} />
     <Pipe from={[-1.77, .3, 1.12]} to={[-1.77, 2.58, 1.12]} r={.035} color="#765565" />
@@ -78,7 +77,7 @@ function Building({ onOpen, still }: Pick<Props, 'onOpen' | 'still'>) {
     <Box p={[-.63, 2.13, -1.32]} s={[1.99, .075, .47]} color="#795c51" surface="wood" repeat={[2, 1]} />
     <Books p={[-1.5, 1.6, -1.23]} count={14} /><Books p={[-1.46, 2.17, -1.23]} count={12} />
     <Box p={[-.1, 2.75, -.6]} s={[2.8, .06, .18]} color="#fff2cd" glow="#ffab62" shadow={false} />
-    <pointLight position={[-.1, 2.2, .1]} color="#ffb873" intensity={14} distance={5} decay={2} />
+    <pointLight position={[-.1, 2.2, .1]} color="#ffb873" intensity={1.5} distance={5} decay={2} />
     <Box p={[-.4, 1.11, .72]} s={[2.5, .14, .88]} color="#b58a6e" surface="wood" repeat={[3, 1]} />
     <Box p={[-.4, .7, .5]} s={[2.2, .72, .55]} color="#48535b" />
     {Array.from({ length: 12 }, (_, i) => <Box key={i} p={[-1.4 + i * .18, .7, .787]} s={[.075, .69, .022]} color="#6c6c65" shadow={false} />)}
@@ -97,7 +96,7 @@ function Building({ onOpen, still }: Pick<Props, 'onOpen' | 'still'>) {
     <Pipe from={[-2.4, 5.8, .75]} to={[-2.4, 5.8, 1.68]} r={.035} />
     <Panel p={[-2.4, 4.55, 1.68]} size={[.67, 2.4]} title="学習室" sub="夜間自習・二階" vertical color={CYAN} onClick={() => onOpen('academy')} />
     <Glow p={[-2.4, 4.5, 1.82]} color={CYAN} size={1.1} opacity={.45} />
-    <pointLight position={[-2.7, 4.4, 1.9]} intensity={17} distance={6} color={CYAN} />
+    <pointLight position={[-2.7, 4.4, 1.9]} intensity={1} distance={6} color={CYAN} />
     <Panel p={[2.01, 4.5, -.22]} size={[2.08, .88]} title="CURIOSITY" color={AMBER} rotation={[0, Math.PI / 2, 0]} />
     {/* Floor directory on the corner, lit like a Japanese tenant sign. */}
     <group position={[2.27, 2.92, 1.02]} rotation={[0, Math.PI / 2 - .45, 0]}>
@@ -117,16 +116,16 @@ function Street({ onOpen, onAbout }: Pick<Props, 'onOpen' | 'onAbout'>) {
   return <group>
     {/* Case-file vending machine: each file is an invitation to begin. */}
     <SceneLink onOpen={() => onOpen('practice')}><group position={[2.55, .15, .58]} rotation={[0, -.15, 0]}>
-      <Box p={[0, 1.03, 0]} s={[1.12, 2.02, .77]} color="#455776" metal={.4} rough={.45} />
-      <Box p={[0, 1.1, .398]} s={[.96, 1.61, .026]} color="#132634" />
+      <Box p={[0, 1.03, 0]} s={[1.12, 2.02, .77]} color="#88704f" metal={.4} rough={.45} />
+      <Box p={[0, 1.1, .398]} s={[.96, 1.61, .026]} color="#36281c" />
       <Panel p={[0, 1.92, .42]} size={[1.0, .22]} title="CASE FILES" color={CYAN} frame={null} onClick={() => onOpen('practice')} />
       {[.72, 1.07, 1.42].flatMap((y, j) => [-.31, -.02, .27].map((x, i) => <group key={`${i}/${j}`}><Box p={[x, y, .433]} s={[.2, .27, .03]} color={['#fdac75', '#77cfcc', '#f093bb'][(i + j) % 3]} shadow={false} /><Box p={[x, y - .04, .454]} s={[.14, .017, .012]} color="#fbf3d9" shadow={false} /></group>))}
-      {[1.42, 1.07, .72].map((y, j) => <Panel key={y} p={[0, y - .2, .45]} size={[.9, .07]} title={['01 · PRICE & VALUE', '02 · RISK RULES', '03 · TEST YOUR IDEAS'][j]} kind="plate" color={['#1f62c8', '#d08a1c', '#c7202a'][j]} ink="#ffffff" frame={null} ppu={700} />)}
+      {[1.42, 1.07, .72].map((y, j) => <Panel key={y} p={[0, y - .2, .45]} size={[.9, .07]} title={['01 · PRICE & VALUE', '02 · RISK RULES', '03 · TEST YOUR IDEAS'][j]} kind="plate" color={['#b4813b', '#d08a1c', '#c7202a'][j]} ink="#ffffff" frame={null} ppu={700} />)}
       <Box p={[0, .34, .43]} s={[.63, .17, .04]} color="#060e1b" />
       <Box p={[.39, .55, .46]} s={[.08, .055, .05]} color={PINK} glow={PINK} shadow={false} />
       <Glow p={[0, 1.05, .5]} color={CYAN} size={.6} opacity={.2} />
     </group></SceneLink>
-    <pointLight position={[2.55, 1.3, 1.7]} color={CYAN} intensity={2.4} distance={4} />
+    <pointLight position={[2.55, 1.3, 1.7]} color={CYAN} intensity={.5} distance={4} />
     {/* Utility pole with address plate, pole advert, transformer, lamp and wires. */}
     <Pipe from={[-3.1, .1, -.8]} to={[-3.1, 6.6, -.8]} r={.075} color="#5a5966" />
     <group position={[-3.1, 0, -.8]} rotation={[0, .75, 0]}>
@@ -137,7 +136,7 @@ function Street({ onOpen, onAbout }: Pick<Props, 'onOpen' | 'onAbout'>) {
     <Pipe from={[-2.8, 5.92, 1.4]} to={[-2.8, 5.5, 1.4]} r={.025} />
     <mesh position={[-2.8, 5.22, 1.4]}><sphereGeometry args={[.3, 28, 20]} /><meshStandardMaterial color="#ffd0eb" emissive="#ff58ad" emissiveIntensity={3} toneMapped={false} /></mesh>
     <Glow p={[-2.8, 5.22, 1.75]} color={PINK} size={.8} />
-    <pointLight position={[-2.8, 5.1, 1.45]} color={PINK} intensity={17} distance={6} />
+    <pointLight position={[-2.8, 5.1, 1.45]} color={PINK} intensity={1} distance={6} />
     <Cable points={[[-3.1, 6.45, -.8], [-.1, 6.05, -1.9], [3.7, 6.8, -2.3]]} />
     <Cable points={[[-3.1, 6.05, -.8], [-2.4, 4.7, -.6], [-1.9, 4.5, -.35]]} />
     <Cable points={[[-3.1, 6.3, -.8], [-3.4, 5.9, 3.5], [-3.6, 6.4, 9]]} />
@@ -249,7 +248,7 @@ function Rain({ still }: { still: boolean }) {
     }
     ref.current.geometry.attributes.position.needsUpdate = true
   })
-  return <lineSegments ref={ref} frustumCulled={false}><bufferGeometry><bufferAttribute attach="attributes-position" args={[positions, 3]} /></bufferGeometry><lineBasicMaterial color="#b3d0f2" transparent opacity={.26} depthWrite={false} /></lineSegments>
+  return <lineSegments ref={ref} frustumCulled={false}><bufferGeometry><bufferAttribute attach="attributes-position" args={[positions, 3]} /></bufferGeometry><lineBasicMaterial color="#b9accf" transparent opacity={.12} depthWrite={false} /></lineSegments>
 }
 
 function Ripples({ still }: { still: boolean }) {
@@ -263,25 +262,20 @@ function Sky() {
   const map = useMemo(() => {
     const c = document.createElement('canvas'); c.width = 4; c.height = 512
     const x = c.getContext('2d')!, g = x.createLinearGradient(0, 0, 0, 512)
-    g.addColorStop(0, '#03050b'); g.addColorStop(.38, '#0a0f1f'); g.addColorStop(.48, '#1e1630'); g.addColorStop(.5, '#2a1a36'); g.addColorStop(.53, '#0b0f1c'); g.addColorStop(1, '#070b16')
+    g.addColorStop(0, '#f5f3fa'); g.addColorStop(1, '#f5f3fa')
     x.fillStyle = g; x.fillRect(0, 0, 4, 512); return texture(c)
   }, [])
   useEffect(() => () => map.dispose(), [map])
-  return <mesh><sphereGeometry args={[150, 32, 24]} /><meshBasicMaterial map={map} side={THREE.BackSide} fog={false} depthWrite={false} /></mesh>
+  return <mesh><sphereGeometry args={[150, 32, 24]} /><meshBasicMaterial map={map} side={THREE.BackSide} fog={false} depthWrite={false} toneMapped={false} /></mesh>
 }
 
-function WetRoad({ tier }: { tier: Tier }) {
-  const puddles = useMemo(() => { const t = surfaceTexture('puddle').clone(); t.repeat.set(9, 9); t.needsUpdate = true; return t }, [])
-  useEffect(() => () => puddles.dispose(), [puddles])
-  return <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -.02, 0]} receiveShadow><planeGeometry args={[120, 120]} />
-    {tier === 'low'
-      ? <meshStandardMaterial color="#10172a" metalness={.5} roughness={.55} />
-      : <MeshReflectorMaterial resolution={tier === 'high' ? 768 : 512} blur={[180, 60]} mixBlur={1} mixStrength={28} mixContrast={1.05} roughness={1} roughnessMap={puddles} depthScale={.45} minDepthThreshold={.4} maxDepthThreshold={1.3} color="#1a2034" metalness={.15} mirror={.45} />}
-  </mesh>
+function StreetBackdrop() {
+  // A seamless lavender backdrop; the raised pavement still receives the house shadows.
+  return <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -.02, 0]}><planeGeometry args={[120, 120]} /><meshBasicMaterial color="#f5f3fa" toneMapped={false} /></mesh>
 }
 
 const ORIGIN = new THREE.Vector2()
-const HOME: V3 = [10.2, 6.6, 15.2], LOOK: V3 = [.6, 2.8, 0]
+const HOME: V3 = [3.7, 7.6, 20.2], LOOK: V3 = [.55, 3.0, .15]
 
 function CameraRig({ reset, focus, still }: { reset: number; focus: NightDestination | null; still: boolean }) {
   const { camera, size } = useThree()
@@ -314,7 +308,7 @@ function NeonBloom() {
   const fx = useRef<{ frame: THREE.WebGLRenderTarget; bloom: UnrealBloomPass; quad: FullScreenQuad; size: THREE.Vector2 } | null>(null)
   useEffect(() => {
     const frame = new THREE.WebGLRenderTarget(1, 1)
-    const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), .5, .36, .84)
+    const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), .12, .36, 1.1)
     const add = new THREE.ShaderMaterial({ ...CopyShader, uniforms: THREE.UniformsUtils.clone(CopyShader.uniforms), blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false, transparent: true })
     const quad = new FullScreenQuad(add)
     fx.current = { frame, bloom, quad, size: new THREE.Vector2() }
@@ -372,13 +366,13 @@ export default function NightWorld(props: Props) {
   const [native] = useState(() => typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1)
   // Native sharpness up to 2x with MSAA on top; FrameBudget steps down when frames run long.
   const dpr = tier === 'high' ? Math.min(2, native) : tier === 'mid' ? Math.min(1.25, native) : 1
-  return <Canvas shadows={tier !== 'low'} dpr={dpr} camera={{ position: HOME, fov: 35, near: .5, far: 220 }} frameloop={props.active ? props.still ? 'demand' : 'always' : 'never'} gl={{ antialias: true, alpha: false, stencil: false, powerPreference: 'high-performance' }} onCreated={({ gl }) => { gl.toneMapping = THREE.ACESFilmicToneMapping; gl.toneMappingExposure = 1.12 }}>
-    <color attach="background" args={['#070b16']} /><fog attach="fog" args={['#0a0d1c', 30, 118]} />
-    <ambientLight intensity={.75} color="#9d9bc4" /><hemisphereLight args={['#8497ce', '#212038', .7]} />
-    <directionalLight key={tier} position={[-4, 10, 4]} intensity={2.1} color="#9bade0" castShadow shadow-mapSize={tier === 'high' ? [2048, 2048] : [1024, 1024]} shadow-camera-left={-9} shadow-camera-right={9} shadow-camera-top={10} shadow-camera-bottom={-9} shadow-normalBias={.025} shadow-bias={-.0004} />
-    <pointLight position={[1, 3.1, 2.3]} color={PINK} intensity={25} distance={7} />
-    <pointLight position={[4, 4.5, -1]} color="#766bfe" intensity={24} distance={8} />
-    <Sky /><WetRoad tier={tier} />
+  return <Canvas shadows={tier !== 'low'} dpr={dpr} camera={{ position: HOME, fov: 35, near: .5, far: 220 }} frameloop={props.active ? props.still ? 'demand' : 'always' : 'never'} gl={{ antialias: true, alpha: false, stencil: false, powerPreference: 'high-performance' }} onCreated={({ gl }) => { gl.toneMapping = THREE.ACESFilmicToneMapping; gl.toneMappingExposure = 1.05 }}>
+    <color attach="background" args={['#f5f3fa']} /><fog attach="fog" args={['#f5f3fa', 30, 118]} />
+    <ambientLight intensity={1.1} color="#ffffff" /><hemisphereLight args={['#ffffff', '#c9b9dc', .8]} />
+    <directionalLight key={tier} position={[-4, 10, 4]} intensity={2.0} color="#ffffff" castShadow shadow-mapSize={tier === 'high' ? [2048, 2048] : [1024, 1024]} shadow-camera-left={-9} shadow-camera-right={9} shadow-camera-top={10} shadow-camera-bottom={-9} shadow-normalBias={.025} shadow-bias={-.0004} />
+    <pointLight position={[1, 3.1, 2.3]} color={PINK} intensity={1.5} distance={7} />
+    <pointLight position={[4, 4.5, -1]} color="#c6b8ed" intensity={1.2} distance={8} />
+    <Sky /><StreetBackdrop />
     <Bake>
       <Building onOpen={props.onOpen} still={props.still} /><Street onOpen={props.onOpen} onAbout={props.onAbout} /><StreetDetails still={props.still} />
       <RoadMarks /><LessonMachine onOpen={() => props.onOpen('lessons')} /><Postbox /><CurveMirror />

@@ -54,7 +54,7 @@ export function PortfolioPanel() {
                         style={{
                           background: "var(--bg-3)",
                           border: `1px solid ${up ? "rgba(0,255,159,0.3)" : "rgba(255,59,92,0.3)"}`,
-                          color: up ? "#00ff9f" : "#ff3b5c",
+                          color: up ? "#428c88" : "#ff3b5c",
                         }}
                       >
                         {h.symbol.slice(0, 2)}
@@ -74,7 +74,7 @@ export function PortfolioPanel() {
                     >
                       <div className="flex-1 h-1 bg-[var(--bg-3)] rounded-full overflow-hidden mr-1.5">
                         <motion.div
-                          className="h-full bg-gradient-to-r from-[#00ff9f] to-[#58c7ff]"
+                          className="h-full bg-gradient-to-r from-[#428c88] to-[#956bd0]"
                           animate={{ width: `${h.weight * 100 * 2.5}%` }}
                           transition={{ type: "spring", stiffness: 80, damping: 16 }}
                           style={{ maxWidth: "100%" }}

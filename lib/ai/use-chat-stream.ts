@@ -36,7 +36,7 @@ export function useChatStream() {
   const send = useCallback(
     async (
       messages: WireMessage[],
-      opts: { lang?: 'zh' | 'en'; surface?: string } & StreamCallbacks
+      opts: { lang?: 'zh' | 'en'; surface?: string; conversationId?: string; onConversation?: (id: string) => void } & StreamCallbacks
     ) => {
       const { onText, onDone, onError, lang = 'zh', surface } = opts
 
@@ -51,13 +51,15 @@ export function useChatStream() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           // Keep complete recent turns with room for the latest user message.
-          body: JSON.stringify({ messages: messages.filter(m => m.content.trim()).slice(-23).map(m => ({ ...m, content: m.content.slice(0, 4000) })), lang, surface }),
+          body: JSON.stringify({ messages: messages.filter(m => m.content.trim()).slice(-23).map(m => ({ ...m, content: m.content.slice(0, 4000) })), lang, surface, conversationId: opts.conversationId, requestId: crypto.randomUUID() }),
           signal: ctrl.signal,
         })
 
         if (!res.ok || !res.body) {
           const msg =
-            res.status === 429
+            res.status === 401
+              ? lang === 'en' ? 'Please sign in to use the assistant.' : '请先登录，再使用 AI 助手。'
+              : res.status === 429
               ? lang === 'en'
                 ? 'Too many requests. Please wait a moment.'
                 : '请求太频繁，请稍等一下再问。'
@@ -69,6 +71,8 @@ export function useChatStream() {
           return
         }
 
+        const conversationId = res.headers.get('X-Conversation-Id')
+        if (conversationId) opts.onConversation?.(conversationId)
         const reader = res.body.getReader()
         const decoder = new TextDecoder()
 

@@ -41,7 +41,7 @@ function ViewTitleBar() {
   )
 }
 
-function ViewRenderer() {
+function ViewRenderer({ embedded = false }: { embedded?: boolean }) {
   const { view } = useView()
   return (
     <AnimatePresence mode="wait">
@@ -54,7 +54,7 @@ function ViewRenderer() {
         data-view={view}
         className="flex-1 min-w-0 min-h-0 flex"
       >
-        {view === "workspace" && <WorkspaceView />}
+        {view === "workspace" && <WorkspaceView showAgent={!embedded} />}
         {view === "agent"     && <AgentView />}
         {view === "markets"   && <MarketsView />}
         {view === "discover"  && <DiscoverView />}
@@ -67,21 +67,30 @@ function ViewRenderer() {
   )
 }
 
-export function RepositoryConsole({ initialView, onExit }: { initialView: ViewId; onExit: () => void }) {
+function ExchangeTabs() {
+  const { view, setView } = useView()
+  const t = useT()
+  const tabs: ViewId[] = ['markets', 'workspace', 'discover', 'journal', 'backtest', 'risk', 'settings']
+  return <nav className="unified-subnav" aria-label="Exchange">
+    {tabs.map(id => <button type="button" key={id} aria-current={view === id ? 'page' : undefined} onClick={() => setView(id)}>{t(VIEW_META[id].title)}</button>)}
+  </nav>
+}
+
+export function RepositoryConsole({ initialView, onExit, embedded = false }: { initialView: ViewId; onExit: () => void; embedded?: boolean }) {
   return (
     <ViewProvider initialView={initialView}>
-        <div className="h-screen w-screen bg-[var(--bg-0)] text-[var(--fg-0)] flex flex-col overflow-hidden hud-grid">
-          <TopBar onExit={onExit} />
+        <div className={embedded ? 'unified-exchange' : "h-screen w-screen bg-[var(--bg-0)] text-[var(--fg-0)] flex flex-col overflow-hidden hud-grid"}>
+          {embedded ? <ExchangeTabs /> : <TopBar onExit={onExit} />}
           <div className="flex-1 flex min-h-0">
-            <LeftRail onExit={onExit} />
+            {!embedded && <LeftRail onExit={onExit} />}
             <div className="flex-1 min-w-0 flex flex-col min-h-0">
-              <ViewTitleBar />
+              {!embedded && <ViewTitleBar />}
               <div className="flex-1 min-w-0 min-h-0 p-2.5 flex overflow-auto">
-                <ViewRenderer />
+                <ViewRenderer embedded={embedded} />
               </div>
             </div>
           </div>
-          <ToastLayer />
+          {!embedded && <ToastLayer />}
         </div>
     </ViewProvider>
   )

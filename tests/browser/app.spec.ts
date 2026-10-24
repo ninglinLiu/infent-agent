@@ -1,10 +1,10 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 
 test('landing chat renders real transport safely, exposes evidence, and fits viewport', async ({ page }) => {
   await page.route('**/api/chat', route => route.fulfill({ status: 200, contentType: 'text/plain; charset=utf-8', body:
     '<img src=x onerror="window.INFENT_XSS=true"> **Verified result**\n<<<INFENT_META>>>' + JSON.stringify({ strategyIds: [], sources: ['测试来源'], tools: [{ id: 'test', name: 'get_price', arguments: { symbol: 'BTC' }, durationMs: 10, result: { ok: true, source: 'Fixture (not live)', observedAt: '2026-01-01T00:00:00Z', data: { symbol: 'BTC-USD', price: 100, currency: 'USD' } } }] })
   }))
-  await page.goto('/#live-agent')
+  await page.goto('/about#live-agent')
   const section = page.locator('#live-agent')
   await section.locator('input').fill('BTC 价格？')
   await section.locator('button[type=submit]').click()
@@ -20,23 +20,49 @@ test('landing chat renders real transport safely, exposes evidence, and fits vie
   await page.screenshot({ animations: 'disabled', path: `test-results/landing-${test.info().project.name}.png`, fullPage: false })
 })
 
-test('desktop house opens the repository console and preserves its navigation', async ({ page }, info) => {
-  test.skip(info.project.name !== 'desktop', 'The night study is desktop only')
+test('desktop house opens an AI-first workspace with five shared navigation entries', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop', 'The unified workspace is desktop only')
   await page.route('**/api/market/**', route => route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"Test fixture unavailable"}' }))
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
   await page.goto('/dashboard')
-  await page.locator('.night-scene').press('Enter')
-  await expect(page.getByRole('dialog')).toBeVisible()
-  await expect(page.locator('[data-view="workspace"]')).toBeVisible()
-  await expect(page.locator('input[maxlength="4000"]')).toBeVisible()
-  for (const view of ['backtest', 'risk', 'journal', 'settings']) {
-    const labels = { backtest: /^(回测|Backtest)$/, risk: /^(风控|Risk)$/, journal: /^(交易日志|Journal)$/, settings: /^(设置|Settings)$/ }
-    await page.getByRole('button', { name: labels[view as keyof typeof labels] }).click()
-    await expect(page.locator(`[data-view="${view}"]`)).toBeVisible()
+  await expect(page.locator('.night-entry-card')).toHaveCount(3)
+  await page.locator('.night-entry-card--workspace').click()
+  const shell = page.locator('.unified-workspace')
+  const rail = shell.getByRole('navigation', { name: /主导航|Main navigation/ })
+  await expect(shell).toBeVisible()
+  await expect(shell).toHaveAttribute('data-section', 'ai')
+  await expect(rail.getByRole('button')).toHaveCount(5)
+  const chat = page.locator('.unified-chat')
+  const box = await chat.boundingBox()
+  // The split applies to the usable workspace, excluding shared navigation/chrome.
+  const workspace = await page.locator('.unified-ai').boundingBox()
+  const viewport = page.viewportSize()!
+  expect(workspace!.width * workspace!.height / (viewport.width * viewport.height)).toBeGreaterThanOrEqual(0.8)
+  expect(box!.width / (workspace!.width - 32)).toBeGreaterThanOrEqual(0.8)
+  await expect(shell.locator('.quant-preview')).toBeVisible()
+  await expect(shell.locator('.quant-source')).toContainText(/模拟|illustrative/)
+  await chat.locator('input[maxlength="4000"]').fill('Draft research question')
+  await rail.getByRole('button', { name: /交易所|Exchange/ }).click()
+  await expect(shell.locator('[data-view="markets"]')).toBeVisible()
+  const tabs = shell.getByRole('navigation', { name: 'Exchange', exact: true })
+  const labels = [/^工作台$|^Workspace$/, /发现|Discover/, /日志|Journal/, /回测|Backtest/, /风险|Risk/, /设置|Settings/]
+  const views = ['workspace', 'discover', 'journal', 'backtest', 'risk', 'settings']
+  for (let i = 0; i < views.length; i++) {
+    await tabs.getByRole('button', { name: labels[i] }).click()
+    await expect(shell.locator(`[data-view="${views[i]}"]`)).toBeVisible()
   }
-  await page.getByRole('button', { name: '返回雨夜街角', exact: true }).click()
-  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await rail.getByRole('button', { name: /AI 助手|AI Agent/ }).click()
+  await expect(chat.locator('input[maxlength="4000"]')).toHaveValue('Draft research question')
+  await rail.getByRole('button', { name: /关于|About/ }).click()
+  await expect(shell.locator('.unified-about a[href="/about"]')).toBeVisible()
+  await rail.getByRole('button', { name: /回到房子|House/ }).click()
+  await expect(shell).toBeHidden()
+  await expect(page.locator('.night-entry-card--markets')).toBeVisible()
+  await page.locator('.night-entry-card--markets').click()
+  await expect(shell).toHaveAttribute('data-section', 'exchange')
+  await rail.getByRole('button', { name: /AI 助手|AI Agent/ }).click()
+  await expect(chat.locator('input[maxlength="4000"]')).toHaveValue('Draft research question')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
   expect(errors).toEqual([])
 })
@@ -76,21 +102,23 @@ test('learning room keeps lessons and mentors without duplicating the financial 
   await page.getByRole('button', { name: '继续下一节' }).click()
   await page.keyboard.press('Escape')
   await page.locator('.night-scene').press('l')
-  await page.getByRole('button', { name: /知识学习/ }).click()
+  await room.getByRole('button', { name: '知识短课', exact: true }).click()
   await expect(room.getByRole('heading', { name: '先想清楚，能承受多少', exact: true })).toBeVisible()
-  await page.getByRole('button', { name: 'Switch to English', exact: true }).click()
+  await page.getByRole('button', { name: '切换为英文', exact: true }).click()
   await expect(room.getByRole('heading', { name: 'Know how much you can risk', exact: true })).toBeVisible()
   await expect(page.locator('html')).toHaveAttribute('lang', 'en')
   await page.reload()
   await page.locator('.night-scene').press('l')
-  await page.getByRole('button', { name: /^Learning/ }).click()
+  await room.getByRole('button', { name: 'Lessons', exact: true }).click()
   await expect(room.getByRole('heading', { name: 'Know how much you can risk', exact: true })).toBeVisible()
-  await page.getByRole('button', { name: '切换到中文', exact: true }).click()
-  await page.getByRole('button', { name: /角色模拟/ }).click()
+  await page.getByRole('button', { name: 'Switch to Chinese', exact: true }).click()
+  await room.getByRole('button', { name: '案例实践', exact: true }).click()
   await page.getByRole('button', { name: '和导师打个招呼', exact: true }).click()
-  await expect(room.getByRole('status')).toContainText('你好，研究员')
-  await page.getByRole('button', { name: '返回雨夜街角', exact: true }).click()
+  // The Coca-Cola case now uses Lin Che, the existing quant mentor.
+  await expect(room.locator('[data-world="hologram"]')).toBeVisible()
+  await expect(room.getByRole('status')).toContainText('准备好验证第一个想法了吗？')
+  await page.getByRole('button', { name: '回到房子', exact: true }).click()
   await page.locator('.night-scene').press('Enter')
-  await expect(page.locator('[data-view="workspace"]')).toBeVisible()
-  await expect(page.locator('.academy-room')).toHaveCount(0)
+  await expect(page.locator('.unified-workspace')).toHaveAttribute('data-section', 'ai')
+  await expect(page.locator('.academy-room')).toBeHidden()
 })

@@ -4,6 +4,7 @@ import { BookOpen, Compass, LayoutGrid, Settings, Sprout } from 'lucide-react'
 import { useView, type ViewId } from './view-context'
 import { useAcademy } from '@/components/academy/AcademyProvider'
 import { useAcademyLocale } from '@/components/academy/useAcademyLocale'
+import { useLearning } from '@/components/academy/LearningProvider'
 
 const NAV: { id: ViewId; icon: typeof LayoutGrid; label: string; en: string; sub: string }[] = [
   { id: 'workspace', icon: LayoutGrid, label: '学习室', en: 'Study room', sub: 'STUDY ROOM' },
@@ -16,7 +17,10 @@ export function LeftRail() {
   const { view, setView } = useView()
   const { state } = useAcademy()
   const { tr } = useAcademyLocale()
-  const progress = Math.round((Math.min(state.lessonStep, 6) + Math.min(state.simulationStep, 4)) / 10 * 100)
+  const { data } = useLearning()
+  const attempt = data.attempts.find(a => a.course_id === 'coca-cola')
+  const steps = attempt?.status === 'completed' ? 4 : (attempt?.scene ?? 1) - 1
+  const progress = Math.round((Math.min(state.lessonStep, 6) + steps) / 10 * 100)
   return <aside className="academy-rail" aria-label="Dashboard navigation">
     <div className="academy-rail-label">{tr('你的学习室', 'YOUR STUDY ROOM')}</div>
     <nav>{NAV.map(({ id, icon: Icon, label, en, sub }) => <button key={id} aria-current={view === id ? 'page' : undefined} className={view === id ? 'active' : ''} onClick={() => setView(id)}><Icon size={19} /><span>{tr(label, en)}<small>{sub}</small></span>{view === id && <i />}</button>)}</nav>

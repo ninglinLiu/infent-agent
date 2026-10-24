@@ -1,0 +1,36 @@
+{
+  "environment": "https://sscjolfuydqmskqzfppn.supabase.co",
+  "checkedAt": "2026-10-24T14:35:31.274Z",
+  "accounts": {
+    "A": {
+      "userId": "51c91f15-5728-4b0c-814d-dea5efab5b71",
+      "normalAuth": true,
+      "freshLoginRestore": true,
+      "attempts": 1,
+      "restrictedContentAccessible": false,
+      "entitlementMutation": "42501",
+      "balanceMutation": "42501",
+      "mentorSchema": "PGRST106"
+    },
+    "B": {
+      "userId": "a1f0d7da-c7cf-4538-873b-606038ad7da4",
+      "normalAuth": true,
+      "freshLoginRestore": true,
+      "attempts": 1,
+      "restrictedContentAccessible": true,
+      "entitlementMutation": "42501",
+      "balanceMutation": "42501",
+      "mentorSchema": "PGRST106"
+    },
+    "C": {
+      "userId": "7608653f-4abc-4426-9c79-0a4d38660697",
+      "normalAuth": true,
+      "freshLoginRestore": true,
+      "attempts": 0,
+      "restrictedContentAccessible": false,
+      "entitlementMutation": "42501",
+      "balanceMutation": "42501",
+      "mentorSchema": "PGRST106"
+    }
+  }
+}

@@ -16,6 +16,7 @@ import type { StrategySelection } from './structured'
 export const META_DELIMITER = '\n<<<INFENT_META>>>'
 
 export type ChatMeta = {
+  persistenceFailed?: boolean
   /** 服务端确定性匹配出的策略卡 id，对应 lib/mock/agent.ts 的 STRATEGIES */
   strategyIds: string[]
   /** 本次回答检索到的知识库来源文档名，用于前端标注引用 */

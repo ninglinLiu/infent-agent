@@ -1,8 +1,18 @@
-import test from 'node:test'
+import test, { before, after, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { NextRequest } from 'next/server'
 import { POST } from '../app/api/chat/route'
 import { splitMeta } from '../lib/ai/protocol'
+import { accountAuth, type AccountContext } from '../lib/account/server'
+import { chatStorage } from '../lib/account/chat'
+
+// Transport/policy tests use an authenticated fixture; access-control tests run separately.
+before(() => {
+  mock.method(accountAuth, 'require', async () => ({ user: { id: 'test-user' }, finish: (response: Response) => response }) as AccountContext)
+  mock.method(chatStorage, 'begin', async () => '00000000-0000-4000-8000-000000000001')
+  mock.method(chatStorage, 'finish', async () => {})
+})
+after(() => mock.restoreAll())
 
 function request(body: unknown) { return new NextRequest('http://localhost/api/chat', { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json', 'x-forwarded-for': 'test-client' } }) }
 test('route rejects null, wrong roles, oversized content and non-user endings', async () => {

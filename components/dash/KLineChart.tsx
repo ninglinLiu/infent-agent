@@ -89,7 +89,7 @@ function paintChart(api: ChartApi, payload: KlinePayload, interval: ChartInterva
   const volumeData: HistogramData<Time>[] = payload.candles.map((c) => ({
     time: c.time as Time,
     value: c.volume,
-    color: c.close >= c.open ? "rgba(0,255,159,0.4)" : "rgba(255,59,92,0.4)",
+    color: c.close >= c.open ? "rgba(66,140,136,0.3)" : "rgba(187,112,138,0.3)",
   }))
   api.candles.setData(candleData)
   api.volume.setData(volumeData)
@@ -132,7 +132,7 @@ function paintMarks(
       return {
         time: bar.time as Time,
         position: m.kind === "buy" ? "belowBar" : "aboveBar",
-        color: m.kind === "buy" ? "#00ff9f" : "#ff3b5c",
+        color: m.kind === "buy" ? "#428c88" : "#bb708a",
         shape: m.kind === "buy" ? "arrowUp" : "arrowDown",
         text: m.label,
         size: current ? 2 : 1,
@@ -247,28 +247,30 @@ export function KLineChart() {
       if (disposed || chartRef.current) return
       if (el.clientWidth < 48 || el.clientHeight < 80) return
 
+      const palette = getComputedStyle(el)
+      const tone = (name: string) => palette.getPropertyValue(name).trim()
       const chart = createChart(el, {
         autoSize: true,
         layout: {
           background: { type: ColorType.Solid, color: "transparent" },
-          textColor: dark ? "#8a93a0" : "#47536b",
+          textColor: tone("--fg-2"),
           fontFamily: 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace',
         },
         grid: {
-          vertLines: { color: dark ? "rgba(255,255,255,0.05)" : "rgba(15,23,42,0.06)" },
-          horzLines: { color: dark ? "rgba(255,255,255,0.05)" : "rgba(15,23,42,0.06)" },
+          vertLines: { color: tone("--line-1") },
+          horzLines: { color: tone("--line-1") },
         },
         crosshair: {
           mode: CrosshairMode.Normal,
-          vertLine: { color: "#58c7ff", width: 1, style: LineStyle.Dashed, labelBackgroundColor: dark ? "#151820" : "#e7ebf0" },
-          horzLine: { color: "#58c7ff", width: 1, style: LineStyle.Dashed, labelBackgroundColor: dark ? "#151820" : "#e7ebf0" },
+          vertLine: { color: "#956bd0", width: 1, style: LineStyle.Dashed, labelBackgroundColor: tone("--bg-3") },
+          horzLine: { color: "#956bd0", width: 1, style: LineStyle.Dashed, labelBackgroundColor: tone("--bg-3") },
         },
         rightPriceScale: {
-          borderColor: dark ? "#242a36" : "#ced3db",
+          borderColor: tone("--line-2"),
           scaleMargins: { top: 0.1, bottom: 0.22 },
         },
         timeScale: {
-          borderColor: dark ? "#242a36" : "#ced3db",
+          borderColor: tone("--line-2"),
           timeVisible: chartInterval !== "D",
           secondsVisible: false,
           rightOffset: 6,
@@ -279,11 +281,11 @@ export function KLineChart() {
       })
 
       const candles = chart.addSeries(CandlestickSeries, {
-        upColor: "#00ff9f",
-        downColor: "#ff3b5c",
+        upColor: "#428c88",
+        downColor: "#bb708a",
         borderVisible: false,
-        wickUpColor: "#00ff9f",
-        wickDownColor: "#ff3b5c",
+        wickUpColor: "#428c88",
+        wickDownColor: "#bb708a",
       })
       const volume = chart.addSeries(HistogramSeries, {
         priceFormat: { type: "volume" },
@@ -294,7 +296,7 @@ export function KLineChart() {
         visible: false,
       })
       const forecast = chart.addSeries(LineSeries, {
-        color: "#58c7ff",
+        color: "#956bd0",
         lineWidth: 2,
         lineStyle: LineStyle.Dashed,
         lastValueVisible: false,
@@ -302,7 +304,7 @@ export function KLineChart() {
         crosshairMarkerVisible: false,
       })
       const bandUpper = chart.addSeries(LineSeries, {
-        color: "rgba(0,255,159,0.45)",
+        color: "rgba(149,107,208,0.4)",
         lineWidth: 1,
         lineStyle: LineStyle.Dotted,
         lastValueVisible: false,
@@ -310,7 +312,7 @@ export function KLineChart() {
         crosshairMarkerVisible: false,
       })
       const bandLower = chart.addSeries(LineSeries, {
-        color: "rgba(0,255,159,0.45)",
+        color: "rgba(149,107,208,0.4)",
         lineWidth: 1,
         lineStyle: LineStyle.Dotted,
         lastValueVisible: false,
@@ -616,7 +618,7 @@ export function KLineChart() {
             <span className="inline-block w-3 h-1.5 bg-up rounded-sm" /> {t("kline.legend.history")}
           </span>
           <span className="inline-flex items-center gap-1 text-dim">
-            <span className="inline-block w-3 h-1.5 rounded-sm" style={{ background: "#58c7ff" }} /> {t("kline.legend.forecast")}
+            <span className="inline-block w-3 h-1.5 rounded-sm" style={{ background: "#956bd0" }} /> {t("kline.legend.forecast")}
           </span>
           <span className="inline-flex items-center gap-1 text-dim">
             <ArrowUp className="h-2.5 w-2.5 text-up" /> {t("kline.legend.buy")}

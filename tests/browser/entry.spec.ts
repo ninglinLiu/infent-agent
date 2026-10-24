@@ -1,0 +1,20 @@
+import { test, expect } from '@playwright/test'
+
+test('root opens login and the explicit guest entry preserves account protection', async ({ page, request }, info) => {
+  test.skip(info.project.name !== 'desktop', 'Desktop entry flow')
+  const root = await request.get('/', { maxRedirects: 0 })
+  expect(root.status()).toBe(307)
+  expect(root.headers().location).toBe('/login')
+  await page.goto('/')
+  await expect(page).toHaveURL(/\/login$/)
+  await expect(page.locator('input[type=email]')).toBeVisible()
+  await page.getByRole('button', { name: '创建账号', exact: true }).click()
+  await expect(page.getByRole('link', { name: /以访客模式体验/ })).toBeVisible()
+  await page.getByRole('button', { name: 'English', exact: true }).click()
+  await page.getByRole('link', { name: /Continue as a guest/ }).click()
+  await expect(page).toHaveURL(/\/dashboard$/)
+  await expect(page.locator('.night-entry-card')).toHaveCount(3)
+  await page.locator('.night-entry-card--workspace').click()
+  await expect(page.locator('.unified-chat .account-notice')).toBeVisible()
+  expect((await request.get('/api/profile')).status()).toBe(401)
+})
