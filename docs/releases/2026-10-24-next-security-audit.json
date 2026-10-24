@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-24T15:30:21.214Z",
+  "next": "15.5.28",
+  "react": "19.3.1",
+  "reactDom": "19.3.1",
+  "sharp": "0.35.5",
+  "nextPostcss": "8.5.31",
+  "nextStackFindings": [],
+  "overall": {
+    "info": 0,
+    "low": 0,
+    "moderate": 7,
+    "high": 11,
+    "critical": 0,
+    "total": 18
+  },
+  "passed": true
+}

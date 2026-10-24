@@ -16,6 +16,7 @@ const env = { ...process.env,
   LEARNING_TEST_CONFIRM: 'isolated-test-database',
   LEARNING_TEST_ALLOWED_HOST: `${project}.supabase.co`,
   LEARNING_TEST_EMAIL_DOMAIN: 'example.com',
+  E2E_SUPABASE_PROJECT_REF: project,
   LLM_API_KEY: '', DEEPSEEK_API_KEY: '', OPENAI_API_KEY: '', EMBEDDING_API_KEY: '',
 }
 const mode = process.argv[2]
@@ -25,8 +26,9 @@ const commands = {
   build: ['node_modules/next/dist/bin/next', 'build'],
   start: ['--require', './tests/network-proxy.cjs', 'node_modules/next/dist/bin/next', 'start', '-p', '3107'],
   test: ['node_modules/@playwright/test/cli.js', 'test', 'tests/browser/learning-live.spec.ts', '--project=desktop', '--trace=off'],
+  pages: ['node_modules/@playwright/test/cli.js', 'test', 'tests/browser/entry.spec.ts', 'tests/browser/appearance.spec.ts', 'tests/browser/app.spec.ts', 'tests/browser/immersive.spec.ts', 'tests/browser/learning.spec.ts', '--project=desktop', '--trace=off'],
 }
-if (!commands[mode]) throw Error('Usage: node scripts/learning-staging.cjs prepare|verify|build|start|test')
+if (!commands[mode]) throw Error('Usage: node scripts/learning-staging.cjs prepare|verify|build|start|test|pages')
 console.log(`Isolated staging ${mode}: ${project}; paid model credentials disabled.`)
 const child = spawn(process.execPath, commands[mode], { cwd: root, env, stdio: 'inherit' })
 child.on('exit', code => { process.exitCode = code ?? 1 })

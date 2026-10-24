@@ -47,6 +47,10 @@ const { mkdirSync, writeFileSync } = require('node:fs')
     await page.getByRole('link', { name: /Continue as a guest/ }).click()
     await expect(page).toHaveURL(/\/dashboard$/)
     await expect(page.getByText('The curious corner', { exact: true })).toBeVisible()
+    await expect(page.locator('.night-study')).toHaveAttribute('data-scene-ready', 'true', { timeout: 45000 })
+    await expect(page.locator('.night-fallback')).toHaveCount(0)
+    await expect(page.locator('canvas')).toBeVisible()
+    result.house3D = true
     result.guest = true
     if (base.hostname === 'omniaihello.com') {
       const www = await context.request.get('https://www.omniaihello.com/', { maxRedirects: 0 })

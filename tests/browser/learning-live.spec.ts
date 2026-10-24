@@ -41,6 +41,9 @@ test('staging A/B/C real sessions restore data and reject cross-account access',
     await p.getByRole('button', { name: '登录', exact: true }).click()
     expect((await auth).status()).toBe(200)
     await p.waitForURL('**/dashboard', { timeout: 30000 })
+    // A successful login must render the real 3D scene, not silently use its error fallback.
+    await expect(p.locator('.night-study')).toHaveAttribute('data-scene-ready', 'true', { timeout: 45000 })
+    await expect(p.locator('.night-fallback')).toHaveCount(0)
     const profile = await json(p, '/api/profile')
     expect(profile.profile.id).toBe(user.id)
     expect(profile.registeredAt).toBeTruthy()
