@@ -27,6 +27,7 @@ test('desktop house opens an AI-first workspace with five shared navigation entr
   page.on('pageerror', error => errors.push(error.message))
   await page.goto('/dashboard')
   await expect(page.locator('.night-entry-card')).toHaveCount(3)
+  await expect(page.locator('.night-study')).toHaveAttribute('data-scene-ready', 'true', { timeout: 45000 })
   await page.locator('.night-entry-card--workspace').click()
   const shell = page.locator('.unified-workspace')
   const rail = shell.getByRole('navigation', { name: /主导航|Main navigation/ })
@@ -86,6 +87,7 @@ test('PWA exposes PNG icon, installs a worker and serves its offline notice', as
 test('learning room keeps lessons and mentors without duplicating the financial console', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop', 'The night study is desktop only')
   await page.goto('/dashboard')
+  await expect(page.locator('.night-study')).toHaveAttribute('data-scene-ready', 'true', { timeout: 45000 })
   await page.locator('.night-scene').press('l')
   const room = page.locator('.academy-room')
   await expect(room).toBeVisible()
@@ -113,10 +115,12 @@ test('learning room keeps lessons and mentors without duplicating the financial 
   await expect(room.getByRole('heading', { name: 'Know how much you can risk', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Switch to Chinese', exact: true }).click()
   await room.getByRole('button', { name: '案例实践', exact: true }).click()
-  await page.getByRole('button', { name: '和导师打个招呼', exact: true }).click()
-  // The Coca-Cola case now uses Lin Che, the existing quant mentor.
-  await expect(room.locator('[data-world="hologram"]')).toBeVisible()
-  await expect(room.getByRole('status')).toContainText('准备好验证第一个想法了吗？')
+  // The case now uses the user-approved cartoon mentor and playable teaching chart.
+  await expect(room.locator('.comic-mentor-art--0')).toBeVisible()
+  await expect(room.getByRole('img', { name: '动态教学 K 线回放', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: '到决策点', exact: true }).click()
+  await expect(room.locator('.comic-stage')).toHaveAttribute('data-frame', '35')
+  await expect(room.getByTestId('replay-price')).toHaveText('100.00')
   await page.getByRole('button', { name: '回到房子', exact: true }).click()
   await page.locator('.night-scene').press('Enter')
   await expect(page.locator('.unified-workspace')).toHaveAttribute('data-section', 'ai')
