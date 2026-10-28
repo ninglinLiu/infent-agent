@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-28T12:08:43.173Z",
+  "url": "https://omniaihello.com",
+  "readOnly": true,
+  "realAssetSHA256": "111eaa478dc530d3830b8f0f74254ab42b3689d40887c425a54e7999000f5642",
+  "productionUIWithBrowserOnlyFixture": true,
+  "realProductionUserLoginTested": false,
+  "animatedCandles": true,
+  "browserErrors": 0,
+  "passed": true
+}
