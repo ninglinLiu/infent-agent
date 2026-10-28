@@ -44,7 +44,7 @@ export function ComicStage({ scene, lang, stopped, reduced }: { scene: number; l
       <div className="comic-panel-label"><span>{en?'COCA-COLA / TEACHING REPLAY':'可口可乐 / 教学回放'}</span><span className="comic-replay-state">{playing?(en?'PLAYING':'回放中'):(en?'PAUSED':'已暂停')}</span></div>
       <div className="comic-quote">{index===2?(en?'The price fell. What changed?':'又跌了？！判断依据变了吗？'):index===3?(en?'A result is not proof.':'结果，不等于证明。'):index===1?(en?'Good business. Fair price?':'好公司，也要好价格。'):(en?'Start with the evidence.':'先看证据，再看价格。')}</div>
       <div className="comic-price"><strong data-testid="replay-price">{current.close.toFixed(2)}</strong><span>{en?'simulated credits / share':'模拟币 / 份'}</span></div>
-      <svg viewBox="0 0 510 315" className="comic-candles" role="img" aria-label={en?'Animated simulated candlestick replay':'动态教学 K 线回放'}>
+      <svg viewBox="0 0 510 315" preserveAspectRatio="none" className="comic-candles" role="img" aria-label={en?'Animated simulated candlestick replay':'动态教学 K 线回放'}>
         {[0,1,2,3,4].map(i=><g key={i}><line x1="20" x2="465" y1={35+i*51.25} y2={35+i*51.25} className="comic-gridline"/><text x="474" y={39+i*51.25}>{(max-(max-min)*i/4).toFixed(1)}</text></g>)}
         {visible.map((c,i)=><g key={i} className="comic-candle" data-candle={i}>
           <line x1={28+i*12} x2={28+i*12} y1={y(c.high)} y2={y(c.low)} stroke="#24232a" strokeWidth="1.5"/>
