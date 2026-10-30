@@ -81,7 +81,7 @@ function MetricCard({ label, value, format, delta, tone = "neutral", icon: Icon,
       <svg viewBox="0 0 120 28" className="absolute right-3 bottom-2 w-20 h-6 opacity-70">
         <polyline
           fill="none"
-          stroke={tone === "down" ? "#ff3b5c" : tone === "info" ? "#58c7ff" : "#00ff9f"}
+          stroke={tone === "down" ? "#ff3b5c" : tone === "info" ? "#956bd0" : "#428c88"}
           strokeWidth="1.3"
           points="0,20 12,17 24,18 36,12 48,14 60,8 72,10 84,6 96,9 108,4 120,6"
         />

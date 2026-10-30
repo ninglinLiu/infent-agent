@@ -10,6 +10,11 @@ import { QUICK_QUESTIONS, STRATEGIES, type QuickQuestion, type Strategy } from "
 import { useDash } from "@/lib/dash-store"
 import { useLang, type DictKey } from "@/lib/i18n"
 import { useChatStream, toParagraphs, type WireMessage } from "@/lib/ai/use-chat-stream"
+import { accountFetch } from '@/lib/account/browser'
+import { RequireAccount } from '@/components/account/AccountAccess'
+import { useAccount } from '@/components/account/AccountProvider'
+import type { ChatMeta } from '@/lib/ai/protocol'
+import { AsciiOrb } from './AsciiOrb'
 
 type ChatMessage =
   | { id: string; role: "user"; text: string }
@@ -262,22 +267,60 @@ function UserBubble({ text }: { text: string }) {
 }
 
 export function AgentChat() {
+  const { user } = useAccount()
+  return <RequireAccount><AccountChat key={user?.id} /></RequireAccount>
+}
+
+function AccountChat() {
   const { lang, t } = useLang()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState("")
   const [busy, setBusy] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const { send, stop } = useChatStream()
+  const [conversations, setConversations] = useState<{ id: string; title: string }[]>([])
+  const [conversationId, setConversationId] = useState<string>()
+  const [historyBusy, setHistoryBusy] = useState(false)
+  const [historyError, setHistoryError] = useState('')
+  const selection = useRef(0)
+  const refreshHistory = async (restore = false) => {
+    try {
+      const result = await accountFetch<{ conversations: { id: string; title: string }[] }>('/api/conversations')
+      setConversations(result.conversations)
+      if (restore && result.conversations[0]) await selectConversation(result.conversations[0].id)
+    } catch (error) { setHistoryError((error as Error).message) }
+  }
+  // This component is keyed by verified account ID. Restore once per account mount.
+  const initialHistory = useRef(async () => {
+    setHistoryBusy(true)
+    try { await refreshHistory(true) } finally { setHistoryBusy(false) }
+  })
+  useEffect(() => { void initialHistory.current() }, [])
+  async function selectConversation(id: string) {
+    if (busy || historyBusy) return
+    const ticket = ++selection.current
+    setHistoryError('')
+    if (!id) { setConversationId(undefined); setMessages([]); return }
+    setHistoryBusy(true)
+    try {
+      const result = await accountFetch<{ messages: { id: string; role: 'user' | 'assistant'; content: string; meta: ChatMeta; status: string }[] }>(`/api/conversations?id=${encodeURIComponent(id)}`)
+      if (ticket !== selection.current) return
+      setConversationId(id)
+      setMessages(result.messages.map(message => message.role === 'user'
+        ? { id: message.id, role: 'user', text: message.content }
+        : { id: message.id, role: 'assistant', paragraphs: toParagraphs(message.content || (lang === 'en' ? '[This response was not completed. Please ask again.]' : '[此回答未完成，请重新提问。]')), strategyIds: message.meta?.strategyIds ?? [], sources: message.meta?.sources, tools: message.meta?.tools, strategyMode: message.meta?.strategyMode, strategyCards: message.meta?.strategyCards }))
+    } catch (error) { setHistoryError((error as Error).message) }
+    finally { if (ticket === selection.current) setHistoryBusy(false) }
+  }
 
   useEffect(() => {
-    setMessages([
-      {
+    const intro: ChatMessage = {
         id: `intro-${lang}`,
         role: "assistant",
         paragraphs: [t("agent.intro.p1"), t("agent.intro.p2")],
         strategyIds: [],
-      },
-    ])
+    }
+    setMessages(previous => previous.length ? previous.map(message => message.id.startsWith('intro-') ? intro : message) : [intro])
   }, [lang, t])
 
   useEffect(() => {
@@ -291,7 +334,7 @@ export function AgentChat() {
    */
   async function askModel(prompt: string) {
     const text = prompt.trim()
-    if (!text || busy) return
+    if (!text || busy || historyBusy) return
 
     const userId = `u-${Date.now()}`
     const aiId = `a-${Date.now() + 1}`
@@ -316,6 +359,8 @@ export function AgentChat() {
     setBusy(true)
 
     await send(history, {
+      conversationId,
+      onConversation: id => { setConversationId(id); void refreshHistory() },
       lang: lang === "en" ? "en" : "zh",
       surface: lang === "en" ? "the Agent console of the dashboard" : "仪表盘的 Agent 控制台",
       onText: (partial) => {
@@ -327,6 +372,7 @@ export function AgentChat() {
         )
       },
       onDone: (final, meta) => {
+        if (meta?.persistenceFailed) setHistoryError(lang === 'en' ? 'The response could not be saved. Copy it before leaving.' : '回答未能保存，请在离开前复制内容。')
         const paras = toParagraphs(final)
         setMessages((prev) =>
           prev.map((m) =>
@@ -361,8 +407,8 @@ export function AgentChat() {
   }
 
   return (
-    <div className="surface h-full flex flex-col overflow-hidden">
-      <div className="px-4 py-3 border-b border-[var(--line-1)] flex items-center justify-between bg-[var(--bg-2)]">
+    <div className="agent-chat surface h-full flex flex-col overflow-hidden">
+      <div className="agent-chat-header px-4 py-3 border-b border-[var(--line-1)] flex items-center justify-between bg-[var(--bg-2)]">
         <div className="flex items-center gap-2">
           <div className="relative h-8 w-8 rounded-md surface-raised flex items-center justify-center ai-pulse">
             <Bot className="h-4 w-4 text-info" />
@@ -382,7 +428,10 @@ export function AgentChat() {
         </span>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto thin-scroll px-3 py-3 space-y-3">
+      <div className="account-history"><label htmlFor="chat-history">{lang === 'en' ? 'History' : '历史对话'}</label><select id="chat-history" value={conversationId ?? ''} disabled={busy || historyBusy} onChange={e => void selectConversation(e.target.value)}><option value="">{lang === 'en' ? 'New conversation' : '新对话'}</option>{conversations.map(item => <option key={item.id} value={item.id}>{item.title}</option>)}</select><button disabled={busy || historyBusy} onClick={() => void selectConversation('')}>{lang === 'en' ? 'New' : '新建'}</button></div>
+      {historyError && <p role="status" className="account-sync">{historyError}<button onClick={() => { setHistoryError(''); void refreshHistory() }}>{lang === 'en' ? 'Retry' : '重试'}</button></p>}
+      <div ref={scrollRef} className="agent-chat-messages flex-1 overflow-y-auto thin-scroll px-3 py-3 space-y-3">
+        {messages.every(message => message.id.startsWith('intro-')) && <div className="agent-chat-welcome"><AsciiOrb /><p>{lang === 'en' ? 'YOUR SPACE TO THINK' : '给好问题，留一点空间'}</p><h2>{lang === 'en' ? 'What are you curious about?' : '今天，你想了解什么？'}</h2></div>}
         <AnimatePresence initial={false}>
           {messages.map((m) =>
             m.role === "user" ? (
@@ -394,7 +443,7 @@ export function AgentChat() {
         </AnimatePresence>
       </div>
 
-      <div className="px-3 py-2 border-t border-[var(--line-1)] bg-[var(--bg-1)]">
+      <div className="agent-chat-prompts px-3 py-2 border-t border-[var(--line-1)] bg-[var(--bg-1)]">
         <div className="flex items-center gap-1.5 text-[10px] text-ghost mb-1.5">
           <Sparkles className="h-3 w-3 text-info" />
           {t("agent.quickHint")}
@@ -413,10 +462,10 @@ export function AgentChat() {
         </div>
       </div>
 
-      <div className="px-3 py-2.5 border-t border-[var(--line-1)] bg-[var(--bg-2)] flex items-center gap-2">
+      <div className="agent-chat-composer px-3 py-2.5 border-t border-[var(--line-1)] bg-[var(--bg-2)] flex items-center gap-2">
         <input
           value={input}
-          disabled={busy}
+          disabled={busy || historyBusy}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {

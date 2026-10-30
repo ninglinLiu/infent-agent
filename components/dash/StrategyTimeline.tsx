@@ -61,7 +61,7 @@ export function StrategyTimeline() {
 
           <div className="h-1 rounded-full bg-[var(--bg-3)] overflow-hidden mb-3">
             <motion.div
-              className="h-full bg-gradient-to-r from-[#00ff9f] via-[#58c7ff] to-[#00ff9f] bg-[length:200%_100%] animate-shimmer"
+              className="h-full bg-gradient-to-r from-[#428c88] via-[#956bd0] to-[#428c88] bg-[length:200%_100%] animate-shimmer"
               initial={{ width: 0 }}
               animate={{ width: `${(current.step / current.strategy.actions.length) * 100}%` }}
               transition={{ type: "spring", stiffness: 70, damping: 18 }}
@@ -82,7 +82,7 @@ export function StrategyTimeline() {
                       done
                         ? "border-[rgba(0,255,159,0.25)] bg-[rgba(0,255,159,0.05)]"
                         : active
-                          ? "border-[rgba(88,199,255,0.4)] bg-[rgba(88,199,255,0.06)] ring-info"
+                          ? "border-[rgba(188,123,67,0.4)] bg-[rgba(188,123,67,0.06)] ring-info"
                           : "border-[var(--line-1)] bg-[var(--bg-2)]"
                     }`}
                   >

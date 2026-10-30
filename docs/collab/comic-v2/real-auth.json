@@ -1,0 +1,36 @@
+{
+  "project": "sscjolfuydqmskqzfppn",
+  "mockedRequests": 0,
+  "errors": [],
+  "paths": [
+    {
+      "account": "A",
+      "attempt": "fdffa8fe-d04d-469c-8a39-326ad6a39428",
+      "actions": [
+        "research",
+        "buy_40",
+        "hold_rules",
+        "keep_position"
+      ],
+      "totalCents": 1376000,
+      "status": "completed",
+      "completedAt": "2026-10-30T03:41:53.544243+00:00",
+      "legacyRecordsUnchanged": 1
+    },
+    {
+      "account": "C",
+      "attempt": "3bc50202-3bf0-4b9f-a8c3-72ee7c318b57",
+      "actions": [
+        "wait_quarter",
+        "reserve_cash",
+        "enter_pullback",
+        "exit_position"
+      ],
+      "totalCents": 1458000,
+      "status": "completed",
+      "completedAt": "2026-10-30T03:42:38.969553+00:00",
+      "legacyRecordsUnchanged": 0
+    }
+  ],
+  "passed": true
+}

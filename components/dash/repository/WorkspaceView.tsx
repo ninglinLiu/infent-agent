@@ -8,7 +8,7 @@ import { HeatMap } from "@/components/dash/HeatMap"
 import { NewsTicker } from "@/components/dash/NewsTicker"
 import { AgentChat } from "@/components/dash/AgentChat"
 
-export function WorkspaceView() {
+export function WorkspaceView({ showAgent = true }: { showAgent?: boolean }) {
   return (
     <div className="flex-1 min-w-0 flex gap-2.5 min-h-0 overflow-hidden">
       <div className="flex-1 min-w-0 flex flex-col gap-2.5 min-h-0 overflow-y-auto thin-scroll pr-1">
@@ -25,9 +25,9 @@ export function WorkspaceView() {
           <NewsTicker />
         </div>
       </div>
-      <div className="w-[400px] shrink-0 flex flex-col min-h-0">
+      {showAgent && <div className="w-[400px] shrink-0 flex flex-col min-h-0">
         <AgentChat />
-      </div>
+      </div>}
     </div>
   )
 }

@@ -11,13 +11,13 @@ const INSIGHTS = [
   {
     title: "Your portfolio overlaps 73% with Elon Musk's public positions",
     body: "Add 3% TSLA to match his weighting — backtest shows +18% annualised over 24 months.",
-    tone: "#00ff9f",
+    tone: "#428c88",
     tag: "Personal Alpha",
   },
   {
     title: "Fed-cut trade set-up: 4 prior cycles averaged +18% for QQQ in 6 months",
     body: "Sell dates show mean max-drawdown -6%, signal confidence 0.72. Strategy card: Balanced Alpha.",
-    tone: "#22d3ee",
+    tone: "#9a77c4",
     tag: "Macro",
   },
   {
@@ -115,7 +115,7 @@ export function DiscoverView() {
         <div className="flex-1 overflow-y-auto thin-scroll p-2 space-y-1">
           {NEWS_FEED.map((n) => {
             const tone =
-              n.sentiment === "up" ? "#00ff9f" : n.sentiment === "down" ? "#ff3b5c" : "#8a93a0"
+              n.sentiment === "up" ? "#428c88" : n.sentiment === "down" ? "#ff3b5c" : "#8a93a0"
             return (
               <div key={n.id} className="px-2 py-1.5 rounded hover:bg-[var(--bg-3)] transition">
                 <div className="flex items-center gap-2 text-[10px] text-ghost">

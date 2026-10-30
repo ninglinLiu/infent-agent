@@ -36,7 +36,7 @@ export function ShowcaseNav() {
       <div className="sec-x h-14 flex items-center justify-between gap-4">
         <div className="street-header-brand">
         <BackToStreet />
-        <Link href="/" className="flex items-center gap-2 group shrink-0">
+        <Link href="/about" className="flex items-center gap-2 group shrink-0">
           <div className="relative h-7 w-7 rounded-md bg-gradient-to-br from-[#00ff9f] to-[#22d3ee] flex items-center justify-center">
             <span className="font-display text-[13px] font-bold text-black">Ω</span>
           </div>

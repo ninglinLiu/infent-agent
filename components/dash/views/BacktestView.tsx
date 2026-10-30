@@ -120,8 +120,8 @@ export function BacktestView() {
             <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full block">
               <defs>
                 <linearGradient id="bt-fill" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#00ff9f" stopOpacity="0.35" />
-                  <stop offset="100%" stopColor="#00ff9f" stopOpacity="0.02" />
+                  <stop offset="0%" stopColor="#428c88" stopOpacity="0.35" />
+                  <stop offset="100%" stopColor="#428c88" stopOpacity="0.02" />
                 </linearGradient>
               </defs>
               {/* grid */}
@@ -149,7 +149,7 @@ export function BacktestView() {
               />
               <polyline
                 fill="none"
-                stroke="#00ff9f"
+                stroke="#428c88"
                 strokeWidth="1.4"
                 points={equity.map((p, i) => `${PL + i * xStep},${yFn(p.v)}`).join(" ")}
               />
@@ -159,12 +159,12 @@ export function BacktestView() {
                 x2={W - PR}
                 y1={yFn(100_000 * 1.06)}
                 y2={yFn(100_000 * 1.06)}
-                stroke="#58c7ff"
+                stroke="#956bd0"
                 strokeDasharray="4 4"
                 strokeWidth="1"
                 opacity="0.7"
               />
-              <text x={W - PR - 60} y={yFn(100_000 * 1.06) - 6} fill="#58c7ff" fontSize="10">
+              <text x={W - PR - 60} y={yFn(100_000 * 1.06) - 6} fill="#956bd0" fontSize="10">
                 Benchmark +6%
               </text>
             </svg>

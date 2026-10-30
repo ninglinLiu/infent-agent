@@ -1,0 +1,145 @@
+{
+  "disclaimer": {
+    "zh": "本案例借鉴巴菲特的长期投资思想。剧情、价格和交易过程经过教学简化，不是历史行情回放。所有金额均为模拟币。本例暂不计手续费、税费、分红和现金利息。",
+    "en": "Inspired by Buffett’s long-term investing ideas. Story, prices and trades are simplified teaching assumptions, not a historical replay. All amounts are simulated credits. Fees, taxes, dividends and cash interest are excluded."
+  },
+  "notes": [
+    {
+      "zh": "识别企业护城河",
+      "en": "Identify the business moat"
+    },
+    {
+      "zh": "理解估值假设",
+      "en": "Understand the provided valuation"
+    },
+    {
+      "zh": "设定并执行仓位规则",
+      "en": "Set and follow position rules"
+    },
+    {
+      "zh": "记录结果并复盘",
+      "en": "Record and review the result"
+    }
+  ],
+  "scenes": [
+    {
+      "title": {
+        "zh": "审视一家企业——可口可乐",
+        "en": "Examine a business — Coca-Cola"
+      },
+      "text": {
+        "zh": "你正在进行一项价值投资练习。面对短期经营数据的波动，你需要先判断：哪些信息影响企业长期竞争力，哪些信息还不足以支持结论？",
+        "en": "In this value investing exercise, decide which short-term operating changes affect long-term competitiveness and which are insufficient for a conclusion."
+      },
+      "mentor": {
+        "zh": "先收集品牌、渠道和长期现金流的证据，再判断企业价值。单个季度的数据只是研究的起点。",
+        "en": "Gather evidence about the brand, distribution and long-term cash flow before judging value. One quarter is only a starting point."
+      },
+      "choices": [
+        {
+          "id": "research",
+          "label": {
+            "zh": "继续查看品牌、渠道与长期现金流，再进入估值分析。",
+            "en": "Study the brand, distribution and long-term cash flow, then examine valuation."
+          }
+        },
+        {
+          "id": "wait_quarter",
+          "label": {
+            "zh": "仅依据本季度的营收变化，结束进一步研究并选择观望。",
+            "en": "Stop further research and wait solely because of this quarter’s revenue change."
+          }
+        }
+      ]
+    },
+    {
+      "title": {
+        "zh": "给估值加上安全边际",
+        "en": "Allow a margin of safety"
+      },
+      "text": {
+        "zh": "保守估值：125 模拟币／份。当前教学价格：100 模拟币／份。最低安全边际要求：20%。本次建仓上限：初始资金的 40%。安全边际＝（125－100）÷125＝20%。请选择建仓方案，通过本案例的规则检查后执行模拟交易。",
+        "en": "Conservative value: 125 credits/share. Teaching price: 100. Required margin of safety: 20%. Position limit: 40% of initial funds. Margin = (125 − 100) / 125 = 20%. Choose a plan; the simulation checks the rules before trading."
+      },
+      "mentor": {
+        "zh": "好企业也需要合适的价格。检查价格是否满足要求，同时遵守事先设定的仓位规则。",
+        "en": "A good company still needs a suitable price. Check the valuation requirement and follow the agreed position limit."
+      },
+      "choices": [
+        {
+          "id": "buy_80",
+          "label": {
+            "zh": "考虑到公司质量较好，先买入 80 份，再根据后续情况调整。",
+            "en": "Buy 80 shares because the company is good, then adjust later."
+          }
+        },
+        {
+          "id": "buy_40",
+          "label": {
+            "zh": "按当前规则买入 40 份，保留 6,000 模拟币现金。",
+            "en": "Follow the rule: buy 40 shares and retain 6,000 credits in cash."
+          }
+        }
+      ]
+    },
+    {
+      "title": {
+        "zh": "股价下跌，重新检查判断依据",
+        "en": "Recheck the evidence after a price decline"
+      },
+      "text": {
+        "zh": "市场波动使教学价格降至 79.50。题设已复核：企业的长期竞争力和现金流假设没有发生不利变化，当前也没有触发本案例预设的退出条件。你需要依据原有规则作出决定。",
+        "en": "The teaching price falls to 79.50. In this scenario, long-term competitiveness and cash flow assumptions have not deteriorated and no predefined exit condition is triggered. Decide using the original rules."
+      },
+      "mentor": {
+        "zh": "价格变化需要关注，也需要解释。先检查原来的判断依据和退出条件，再决定是否行动。",
+        "en": "Notice price changes, but explain them. Check the original evidence and exit conditions before acting."
+      },
+      "choices": [
+        {
+          "id": "hold_rules",
+          "label": {
+            "zh": "复核基本面和退出条件，按本案例的既定规则继续持有。",
+            "en": "Recheck fundamentals and exit conditions; continue holding under the case rules."
+          }
+        },
+        {
+          "id": "sell_fear",
+          "label": {
+            "zh": "仅因为价格下跌，立即卖出全部 40 份。",
+            "en": "Immediately sell all 40 shares solely because the price fell."
+          }
+        }
+      ]
+    },
+    {
+      "title": {
+        "zh": "时间、结果与复盘",
+        "en": "Time, results and reflection"
+      },
+      "text": {
+        "zh": "在这条教学路径中，一段时间后，企业经营表现支持了原先的判断，教学价格变为 194.00。请回顾你的研究、估值和仓位安排，并思考什么信息可能推翻最初的判断。",
+        "en": "On this teaching path, later operating results support the original judgment and the teaching price becomes 194.00. Review your research, valuation and position size. What information could overturn the original thesis?"
+      },
+      "mentor": {
+        "zh": "这次结果为正，但一次盈利不能单独证明方法有效。复盘时，请同时检查判断依据、规则执行和没有发生的风险。",
+        "en": "This result is positive, but one profit cannot prove a method works. Review the evidence, rule execution and risks that did not materialize."
+      },
+      "choices": []
+    }
+  ],
+  "feedback": {
+    "wait_quarter": {
+      "zh": "观望可以是合理决定，但本次判断主要依赖单季变化，尚未补充长期竞争力和现金流证据。请在下一次尝试中完善研究依据。",
+      "en": "Waiting can be reasonable. This decision relied on one quarter without long-term competitiveness or cash flow evidence. Improve the evidence in your next attempt."
+    },
+    "buy_80": {
+      "zh": "该方案超过了本次练习预设的 40% 仓位上限。企业质量与仓位管理需要分别判断，请重新审视资金安排。",
+      "en": "This plan exceeds the exercise’s 40% position limit. Company quality and position size are separate decisions. Reconsider the allocation."
+    },
+    "sell_fear": {
+      "zh": "这次卖出没有对应本案例事先设定的退出条件。卖出本身并不必然错误；如果基本面恶化或触发风险规则，退出可以合理。本次练习需要补充的是决策依据。",
+      "en": "This sale did not match the predefined exit conditions. Selling is not inherently wrong: deteriorating fundamentals or triggered risk rules can justify it. This exercise calls for a decision supported by evidence."
+    }
+  }
+}

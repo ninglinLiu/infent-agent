@@ -21,6 +21,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run audit:next
       - run: npm run build:knowledge
       - run: npm run typecheck
       - run: npm run lint

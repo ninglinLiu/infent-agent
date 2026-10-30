@@ -1,0 +1,52 @@
+{
+  "checkedAt": "2026-10-28",
+  "productionProject": "bofqqjgdkubmjdnpalqq",
+  "readOnly": true,
+  "rows": [
+    {
+      "dataset": "users",
+      "rows": 8,
+      "digest": "3fbe9fefc863a95e3d1d1e760906ac5d"
+    },
+    {
+      "dataset": "profiles",
+      "rows": 8,
+      "digest": "68591f0fd867a094979aebf2118387a5"
+    },
+    {
+      "dataset": "conversations",
+      "rows": 5,
+      "digest": "c9d565708083a015d8e783b384f96616"
+    },
+    {
+      "dataset": "messages",
+      "rows": 14,
+      "digest": "3da81ea354f0da7c8b932db642ca7977"
+    },
+    {
+      "dataset": "learning_progress",
+      "rows": 2,
+      "digest": "dbeb2e9aa1590c5f580c6878bf65f869"
+    },
+    {
+      "dataset": "learning_attempts",
+      "rows": 1,
+      "digest": "38db7fad10c55d8ffbca9c85bbea9616"
+    },
+    {
+      "dataset": "learning_choices",
+      "rows": 2,
+      "digest": "3f744f8bac7752855243e0da62b3f407"
+    },
+    {
+      "dataset": "course_entitlements",
+      "rows": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "dataset": "watchlist_items",
+      "rows": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+  ]
+}

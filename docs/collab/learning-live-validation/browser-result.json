@@ -1,0 +1,36 @@
+{
+  "project": "sscjolfuydqmskqzfppn",
+  "transport": "real Supabase Auth + Next routes + PostgREST",
+  "mockedRequests": 0,
+  "A": {
+    "normalLogin": true,
+    "refresh": true,
+    "logoutAndFreshBrowserLogin": true,
+    "scene": 3,
+    "cash": 6000,
+    "shares": 40,
+    "total": 9180,
+    "ownConversationRestored": true,
+    "pageVisitsDoNotChangeLoginTime": true
+  },
+  "B": {
+    "normalLogin": true,
+    "completed": true,
+    "total": 13760,
+    "demoAccess": true,
+    "privateARecords": "404",
+    "ownConversationsEmpty": true
+  },
+  "C": {
+    "normalLogin": true,
+    "attempts": 0,
+    "entitlements": 0,
+    "conversations": 0,
+    "restrictedContent": "403",
+    "crossAccountReadAndWrite": "404",
+    "forgedOwnershipAndBalance": "400"
+  },
+  "browserErrors": 0,
+  "crossTabCacheCleared": true,
+  "checkedAt": "2026-10-24T15:30:42.387Z"
+}

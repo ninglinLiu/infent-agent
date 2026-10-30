@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useDash } from "@/lib/dash-store"
 import { Bell, Moon, Palette, Shield, Sun, User } from "lucide-react"
 import { BRAND } from "@/lib/brand"
+import { AccountLink } from '@/components/account/AccountAccess'
 
 export function SettingsView() {
   const { theme, setTheme } = useDash()
@@ -16,9 +17,8 @@ export function SettingsView() {
     <div className="h-full overflow-y-auto thin-scroll pr-1">
       <div className="max-w-[1000px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card icon={User} title="Investor profile">
-          <Row k="Display name" v="Demo User" />
-          <Row k="Capital band" v="$100K – $500K" />
-          <Row k="Onboarding" v="Completed · 2025-11-01" />
+          <AccountLink />
+          <p className="mt-3 text-xs text-dim">以下为教学模拟偏好，不代表个人真实资产。 / These are simulation preferences, not your real financial profile.</p>
           <div className="mt-4">
             <div className="text-[11px] text-dim mb-2">Risk tolerance · {Math.round(risk * 100)}</div>
             <input
@@ -28,7 +28,7 @@ export function SettingsView() {
               step={0.01}
               value={risk}
               onChange={(e) => setRisk(parseFloat(e.target.value))}
-              className="w-full accent-[#00ff9f]"
+              className="w-full accent-[#428c88]"
             />
             <div className="flex justify-between text-[10px] text-ghost mt-1">
               <span>Conservative</span><span>Aggressive</span>
@@ -66,7 +66,7 @@ export function SettingsView() {
           <div className="mt-6">
             <div className="text-[11px] text-dim mb-2">Accent palette</div>
             <div className="flex gap-2">
-              {["#00ff9f", "#22d3ee", "#ff6aa8", "#ffb547", "#8b5cf6"].map((c) => (
+              {["#428c88", "#9a77c4", "#ff6aa8", "#ffb547", "#8b5cf6"].map((c) => (
                 <div
                   key={c}
                   className="h-8 w-8 rounded-md cursor-pointer ring-1 ring-white/10 hover:ring-white/40 transition"

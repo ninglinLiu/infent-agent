@@ -7,7 +7,16 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { boardTexture, lanternTexture, softTexture, surfaceTexture, type BoardStyle } from './night-textures'
 
 export type V3 = [number, number, number]
-export const PINK = '#ff58ad', CYAN = '#4fe4e7', AMBER = '#ffc078', VERMILION = '#d8452b'
+export const PINK = '#8d58c6', CYAN = '#7b68b7', AMBER = '#aa805e', VERMILION = '#d8452b'
+
+/** Soft painted materials matching the lavender house reference. */
+function paintedColor(value: string) {
+  const color = new THREE.Color(value)
+  const hsl = color.getHSL({ h: 0, s: 0, l: 0 }, THREE.SRGBColorSpace)
+  if (hsl.l > .85) return color
+  const neutral = hsl.s < .25 || (hsl.h > .48 && hsl.h < .75 && hsl.s < .5)
+  return color.setHSL(neutral ? .76 : hsl.h, neutral ? .19 : hsl.s * .85, neutral ? .65 + hsl.l * .25 : .5 + hsl.l * .25, THREE.SRGBColorSpace)
+}
 
 function useSurface(kind: 'tile' | 'pave' | 'wood' | undefined, repeat: [number, number]) {
   const [rx, ry] = repeat
@@ -88,12 +97,12 @@ export function Bake({ children }: { children: React.ReactNode }) {
 
 export function Box({ p, s, color = '#273140', glow, rotation, metal = .25, rough = .64, surface, repeat = [1, 1], shadow = true }: { p: V3; s: V3; color?: string; glow?: string; rotation?: V3; metal?: number; rough?: number; surface?: 'tile' | 'pave' | 'wood'; repeat?: [number, number]; shadow?: boolean }) {
   const map = useSurface(surface, repeat)
-  return <mesh position={p} rotation={rotation} castShadow={shadow} receiveShadow><boxGeometry args={s} /><meshStandardMaterial color={color} map={map} roughness={rough} metalness={metal} emissive={glow || '#000'} emissiveIntensity={glow ? 1.7 : 0} /></mesh>
+  return <mesh position={p} rotation={rotation} castShadow={shadow} receiveShadow><boxGeometry args={s} /><meshStandardMaterial color={paintedColor(color)} map={surface === 'wood' ? map : null} roughness={Math.max(.8, rough)} metalness={Math.min(.08, metal)} emissive={glow || '#000'} emissiveIntensity={glow ? .15 : 0} /></mesh>
 }
 
 export function Pipe({ from, to, r = .025, color = '#697b8b' }: { from: V3; to: V3; r?: number; color?: string }) {
   const a = new THREE.Vector3(...from), b = new THREE.Vector3(...to), d = b.clone().sub(a)
-  return <mesh position={a.add(b).multiplyScalar(.5)} quaternion={new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize())} castShadow><cylinderGeometry args={[r, r, d.length(), 10]} /><meshStandardMaterial color={color} metalness={.65} roughness={.4} /></mesh>
+  return <mesh position={a.add(b).multiplyScalar(.5)} quaternion={new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize())} castShadow><cylinderGeometry args={[r, r, d.length(), 10]} /><meshStandardMaterial color={paintedColor(color)} metalness={.12} roughness={.8} /></mesh>
 }
 
 export function Cable({ points, r = .018 }: { points: V3[]; r?: number }) {
@@ -122,17 +131,17 @@ type PanelProps = {
 }
 
 /** A physical sign: lit faces ignore scene light, painted and wooden faces receive it. */
-export function Panel({ p, size, title, sub, lines, color = CYAN, kind = 'neon', ink, vertical = false, font, ppu, rotation = [0, 0, 0], onClick, frame = '#2d323e', depth = .14, back = false }: PanelProps) {
+export function Panel({ p, size, title, sub, lines, color = CYAN, kind, ink, vertical = false, font, ppu, rotation = [0, 0, 0], onClick, frame = '#b9a4d1', depth = .14, back = false }: PanelProps) {
   const [hover, setHover] = useState(false)
   const [w, h] = size
-  const map = useMemo(() => boardTexture({ title, sub, lines, color, style: kind, ink, vertical, font, ppu }, [w, h]), [title, sub, lines, color, kind, ink, vertical, font, ppu, w, h])
+  const map = useMemo(() => boardTexture({ title, sub, lines, color: kind ? color : '#fffdfd', style: kind ?? 'light', ink: kind ? ink : color, vertical, font, ppu }, [w, h]), [title, sub, lines, color, kind, ink, vertical, font, ppu, w, h])
   useEffect(() => () => map.dispose(), [map])
-  const lit = kind === 'neon' || kind === 'light'
+  const lit = !kind || kind === 'neon' || kind === 'light'
   const click = (e: ThreeEvent<MouseEvent>) => { if (onClick && e.delta <= 4) { e.stopPropagation(); onClick() } }
   const over = (e: ThreeEvent<PointerEvent>) => { if (onClick) { e.stopPropagation(); setHover(true); document.body.style.cursor = 'pointer' } }
   const out = () => { if (onClick) { setHover(false); document.body.style.cursor = '' } }
   const material = lit
-    ? <meshBasicMaterial map={map} color={hover ? [1.9, 1.9, 1.9] : kind === 'neon' ? [1.25, 1.25, 1.25] : [.85, .85, .85]} toneMapped={false} />
+    ? <meshBasicMaterial map={map} color={hover ? [1.06, 1.03, 1.1] : [1, 1, 1]} toneMapped={false} />
     : <meshStandardMaterial map={map} roughness={.8} emissive="#ffffff" emissiveMap={map} emissiveIntensity={hover ? .5 : kind === 'paper' ? .3 : .12} />
   return <group position={p} rotation={rotation}>
     {frame && <mesh position={[0, 0, -depth / 2 + .01]} castShadow receiveShadow><boxGeometry args={[w + .08, h + .08, depth]} /><meshStandardMaterial color={frame} metalness={.45} roughness={.5} /></mesh>}

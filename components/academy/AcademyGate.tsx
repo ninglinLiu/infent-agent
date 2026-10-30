@@ -41,7 +41,7 @@ export function AcademyGate({ children, onExit }: { children: React.ReactNode; o
             <label htmlFor="researcher-name">{tr("怎么称呼你？", "What should we call you?")}<span>{tr("选填", "Optional")}</span></label>
             <input id="researcher-name" autoComplete="nickname" maxLength={20} placeholder={tr("你的研究员昵称", "Your researcher nickname")} value={name} onChange={e => setName(e.target.value)} />
             <button type="submit" className="academy-primary">{tr("以研究员身份进入", "Enter as a researcher")} <ArrowRight size={18} /></button>
-            <p className="academy-caption">{tr("演示登录，无需密码。昵称与进度仅保存在此浏览器。", "Demo sign-in. No password needed. Your nickname and progress stay in this browser.")}</p>
+            <p className="academy-caption">{tr("设置学习昵称，进度将保存在你的账号中。", "Choose a study nickname. Progress is saved to your account.")}</p>
           </form>
           <div className="academy-entry-foot"><BookOpen size={16} /><span>{tr("一段故事 · 三节短课 · 一次模拟实践", "One story · Three short lessons · One practice case")}</span></div>
         </div> : <div className="academy-story-copy academy-enter" key={state.storyStep}>
@@ -53,7 +53,7 @@ export function AcademyGate({ children, onExit }: { children: React.ReactNode; o
           <button className="academy-primary" onClick={() => update({ storyStep: state.storyStep + 1 })}>{story.action}<ArrowRight size={18} /></button>
           <p className="academy-caption"><Check size={13} />{tr("单线故事，按自己的节奏继续", "One story. Continue at your own pace.")}</p>
         </div>}
-        {!storageAvailable && <p className="academy-storage-notice" role="status">{tr("浏览器暂不允许保存，当前体验可继续；刷新后进度可能丢失。", "Your browser cannot save progress. You can continue, but refreshing may lose your work.")}</p>}
+        {!storageAvailable && <p className="academy-storage-notice" role="status">{tr("云端保存失败，请点击同步提示中的重试。", "Cloud save failed. Use Retry in the sync notice.")}</p>}
         <p className="academy-persona-note">{tr("角色对白为虚构教学内容。巴菲特角色取材于其公开投资理念，并非本人对话或背书；林澈为原创角色。", "Dialogue is fictional and educational. The Buffett character draws on his public investing ideas, not personal dialogue or endorsement. Lin Che is an original character.")}</p>
       </section>
     </div>

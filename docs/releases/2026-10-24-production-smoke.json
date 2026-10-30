@@ -1,0 +1,19 @@
+{
+  "url": "https://omniaihello.com",
+  "checkedAt": "2026-10-24T15:01:59.564Z",
+  "readOnly": true,
+  "api": {
+    "learning": 401,
+    "conversations": 401,
+    "profile": 401,
+    "progress": 401,
+    "watchlist": 401
+  },
+  "registrationForm": true,
+  "productionDatabase": true,
+  "emailConfirmationDisabled": true,
+  "guest": true,
+  "wwwRedirect": 308,
+  "browserErrors": 0,
+  "passed": true
+}

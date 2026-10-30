@@ -1,0 +1,68 @@
+{
+  "before": [
+    {
+      "relation": "users",
+      "rows": 11,
+      "digest": "29e648d665538747ce065ca359ad9c6e"
+    },
+    {
+      "relation": "profiles",
+      "rows": 11,
+      "digest": "27342bd627408e1804650a9439bf7203"
+    },
+    {
+      "relation": "conversations",
+      "rows": 7,
+      "digest": "035e41a83bd5baa65b8c5f5fd543b6fd"
+    },
+    {
+      "relation": "messages",
+      "rows": 24,
+      "digest": "009c8bcec26a4539f8b277a73094ba76"
+    },
+    {
+      "relation": "learning_attempts",
+      "rows": 10,
+      "digest": "43dd5b7d917dbe3109e68fa77b991429"
+    },
+    {
+      "relation": "learning_choices",
+      "rows": 12,
+      "digest": "03896217c53958517655292b2a9c368a"
+    }
+  ],
+  "after": [
+    {
+      "relation": "users",
+      "rows": 11,
+      "digest": "29e648d665538747ce065ca359ad9c6e"
+    },
+    {
+      "relation": "profiles",
+      "rows": 11,
+      "digest": "27342bd627408e1804650a9439bf7203"
+    },
+    {
+      "relation": "conversations",
+      "rows": 7,
+      "digest": "035e41a83bd5baa65b8c5f5fd543b6fd"
+    },
+    {
+      "relation": "messages",
+      "rows": 24,
+      "digest": "009c8bcec26a4539f8b277a73094ba76"
+    },
+    {
+      "relation": "learning_attempts",
+      "rows": 10,
+      "digest": "43dd5b7d917dbe3109e68fa77b991429"
+    },
+    {
+      "relation": "learning_choices",
+      "rows": 12,
+      "digest": "03896217c53958517655292b2a9c368a"
+    }
+  ],
+  "unchanged": true,
+  "scope": "Snapshot immediately before and after deployment + append-only production migration, before the dedicated production demo test."
+}

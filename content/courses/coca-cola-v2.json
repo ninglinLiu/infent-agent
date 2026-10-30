@@ -1,0 +1,204 @@
+{
+  "disclaimer": {
+    "zh": "本练习借鉴长期价值投资的研究方法。可口可乐作为教学对象；资料、价格路径与交易时点均经简化，不对应1988年的真实行情。所有金额为模拟币，不计分红、税费、手续费与现金利息。不同选择体现不同约束，不按事后收益判定对错。",
+    "en": "This exercise uses Coca-Cola to explore long-term investment research. Evidence, prices and trade timing are simplified teaching assumptions, not a replay of 1988. All amounts are simulated; dividends, fees, taxes and cash interest are excluded. Choices reflect different constraints and are not graded by hindsight returns."
+  },
+  "notes": [
+    {
+      "zh": "明确研究重点与证据缺口",
+      "en": "Define research priorities and missing evidence"
+    },
+    {
+      "zh": "比较估值与资金安排",
+      "en": "Compare valuation and capital allocation"
+    },
+    {
+      "zh": "记录波动中的行动依据",
+      "en": "Document the response to a drawdown"
+    },
+    {
+      "zh": "制定后续计划并完成复盘",
+      "en": "Set a follow-up plan and close the review"
+    }
+  ],
+  "scenes": [
+    {
+      "title": {
+        "zh": "先回答：你准备研究什么？",
+        "en": "What evidence would you investigate first?"
+      },
+      "text": {
+        "zh": "你接手了一份可口可乐的研究任务。资料包里，品牌认知和分销网络是长期优势；近期经营数据却出现放缓，促销投入也在增加。现在还不能确定，这是阶段性调整，还是盈利能力开始承压。你的账户有10,000模拟币，尚未持仓。你可以先拆解近期经营变化，也可以先建立长期现金流框架。两条路径都需要证据，不能仅凭“伟大企业”四个字作决定。",
+        "en": "You are reviewing Coca-Cola. The teaching dossier highlights brand recognition and distribution strength, but recent operating growth has slowed and promotional spending has increased. It is unclear whether this is temporary or a sign of weaker profitability. You hold 10,000 simulated credits and no shares. Start with recent operating changes or build a long-term cash-flow framework; neither approach can rely on the company’s reputation alone."
+      },
+      "mentor": {
+        "zh": "先把问题拆开。销量、价格和渠道库存，分别能解释什么？如果你看长期现金流，也要写明增长和利润率靠什么支撑。研究顺序可以不同，缺的证据不能省。",
+        "en": "Separate volume, pricing and channel inventory. What can each explain? If you start with long-term cash flow, state what supports growth and margins. Either sequence is workable; neither removes the need for evidence."
+      },
+      "choices": [
+        {
+          "id": "wait_quarter",
+          "label": {
+            "zh": "先核对近期经营数据：拆分销量、定价与促销投入，等关键证据更清楚后再决定是否建仓。",
+            "en": "Investigate volume, pricing and promotional spending first; seek clearer operating evidence before committing capital."
+          }
+        },
+        {
+          "id": "research",
+          "label": {
+            "zh": "先建立长期估值框架：研究品牌、分销和现金创造能力，再用近期数据检验这些假设。",
+            "en": "Build a long-term valuation framework around brand, distribution and cash generation, then test it against recent data."
+          }
+        }
+      ]
+    },
+    {
+      "title": {
+        "zh": "值得研究，不等于现在必须买入",
+        "en": "A research case is not yet a buying decision"
+      },
+      "text": {
+        "zh": "两种研究路径现在汇合：在本练习的假设下，暂未发现竞争优势明显削弱，但增长恢复的时间仍不确定。资料包给出的保守参考价值为125模拟币/份，当前价格100，对应20%的安全边际。125是估值假设，不是价格承诺。你需要决定：用40%的初始资金建立观察仓，还是保留全部现金等待更充分的信息。等待可能错过上涨，买入则要承担估值判断错误和进一步下跌的风险。",
+        "en": "Both research paths converge. Under the exercise assumptions, there is no clear evidence of a weaker competitive position, but the timing of recovery is uncertain. The dossier supplies a conservative value estimate of 125 credits per share against a price of 100: a 20% margin of safety. The estimate is not a price guarantee. Choose a 40% initial allocation or keep cash while gathering evidence. Waiting may miss a rise; buying exposes you to valuation error and further losses."
+      },
+      "mentor": {
+        "zh": "先定你愿意承担多少不确定性，再谈买几份。40份花掉4,000，留下6,000现金；暂不买入也可以，但最好说清楚，什么新信息会让你重新考虑。",
+        "en": "Decide how much uncertainty you can carry before choosing the size. Forty shares cost 4,000 and leave 6,000 in cash. Staying in cash is also a decision: identify the evidence that would make you reconsider."
+      },
+      "choices": [
+        {
+          "id": "reserve_cash",
+          "label": {
+            "zh": "暂不建仓，保留10,000现金；等待经营数据或估值出现更有说服力的变化。",
+            "en": "Keep all 10,000 in cash until operating evidence or valuation becomes more compelling."
+          }
+        },
+        {
+          "id": "buy_40",
+          "label": {
+            "zh": "以100买入40份，投入4,000；保留6,000现金，并在后续节点复核原有假设。",
+            "en": "Buy 40 shares at 100, allocate 4,000, retain 6,000 in cash and review the thesis at the next checkpoint."
+          }
+        }
+      ]
+    },
+    {
+      "title": {
+        "zh": "跌到79.50：调整仓位，还是调整判断？",
+        "en": "At 79.50, reconsider the position and the thesis"
+      },
+      "text": {
+        "zh": "价格从100跌至79.50，跌幅20.5%。新资料尚未显示品牌和渠道发生明显恶化，但需求恢复仍慢于预期。没有坏消息，不代表原来的估值一定正确。如果你持有40份，此时现金6,000、持仓市值3,180，总值9,180；如果此前选择等待，你仍持有10,000现金。接下来的决定应同时考虑证据是否改变，以及这笔风险是否仍适合你的资金安排。",
+        "en": "The price falls from 100 to 79.50, a 20.5% decline. Updated teaching evidence shows no clear deterioration in the brand or distribution network, but demand recovery remains slower than expected. The absence of bad news does not validate the original valuation. If you bought 40 shares, 6,000 cash plus 3,180 of shares totals 9,180. If you waited, you still hold 10,000 in cash. Consider both the evidence and whether the exposure still fits your capital needs."
+      },
+      "mentor": {
+        "zh": "先问：买入的依据还成立吗？再问：即使成立，我还能不能承受继续波动？继续持有、退出或开始建仓，都要有可检查的理由，而不是一句“迟早会涨”。",
+        "en": "First ask whether the thesis still holds. Then ask whether you can carry further volatility even if it does. Holding, exiting or initiating a position each needs a reason that can be checked, not an assumption that the price must recover."
+      },
+      "choices": [
+        {
+          "id": "reduce_exposure",
+          "label": {
+            "zh": "卖出全部40份，收回3,180；接受820的已实现亏损，优先保留流动性，再观察经营证据。",
+            "en": "Sell all 40 shares for 3,180, realise the 820 loss and prioritise liquidity while monitoring the evidence."
+          }
+        },
+        {
+          "id": "hold_rules",
+          "label": {
+            "zh": "保留40份，暂不追加资金；继续跟踪需求和现金流，并在投资依据受损时重新评估。",
+            "en": "Retain the 40 shares without adding capital; monitor demand and cash flow, reassessing if the thesis weakens."
+          }
+        }
+      ],
+      "cashChoices": [
+        {
+          "id": "retain_cash",
+          "label": {
+            "zh": "继续保留10,000现金；先核实需求恢复情况，不因跌幅扩大就自动认定更便宜。",
+            "en": "Retain 10,000 cash and check demand recovery; a larger decline alone does not establish value."
+          }
+        },
+        {
+          "id": "enter_pullback",
+          "label": {
+            "zh": "以79.50买入40份，投入3,180、保留6,820现金；后续继续检验估值与需求假设。",
+            "en": "Buy 40 shares at 79.50 for 3,180, retain 6,820 cash and continue testing valuation and demand assumptions."
+          }
+        }
+      ]
+    },
+    {
+      "title": {
+        "zh": "价格到194之后，你准备怎么做？",
+        "en": "At 194, decide what comes next"
+      },
+      "text": {
+        "zh": "时间推进到本案例的最后一个观察点。资料包中的经营表现改善，教学价格来到194。这里展示的是一条预设结果，不意味着所有好企业都会走出相同路径。持有者取得了账面收益，提前退出者保住了当时可承受的风险水平，持续观望者则承担了机会成本。现在请做最后一次决定：保留当前资金安排并设定下次复核条件，或将剩余持仓全部变为现金、结束这次观察。",
+        "en": "At the final teaching checkpoint, operating results improve and the illustrative price reaches 194. This is one designed outcome, not a promise about good companies. Holders gained on paper; earlier sellers controlled their exposure at that time; those who stayed in cash incurred an opportunity cost. Make the fourth decision: retain the current allocation with a future review trigger, or convert any remaining shares to cash and close the position."
+      },
+      "mentor": {
+        "zh": "不要只看最后赚了多少。回头核对：你当时掌握了哪些信息？哪些变化能推翻判断？最后这一步，把下次准备怎么做也留下来。四次决定都会进入你的复盘记录。",
+        "en": "Look beyond the final gain. Which evidence was available when you acted, and what would have overturned the decision? Record what you would do next. All four decisions become part of your saved review."
+      },
+      "choices": [
+        {
+          "id": "keep_position",
+          "label": {
+            "zh": "保留当前资金安排；下一次重点复核经营数据与估值，不因为这次上涨自动增加仓位。",
+            "en": "Retain the current allocation and review operating evidence and valuation next; do not increase exposure merely because the price rose."
+          }
+        },
+        {
+          "id": "exit_position",
+          "label": {
+            "zh": "将剩余持仓全部卖出，转为现金；结束本轮观察，重新评估下一笔资金的用途。",
+            "en": "Sell any remaining shares for cash, close this observation period and reassess the next use of capital."
+          }
+        }
+      ]
+    }
+  ],
+  "feedback": {
+    "wait_quarter": {
+      "zh": "你把近期经营证据放在前面。这样有助于减少信息不足时的投入，但等待也有机会成本。接下来使用同一份估值资料比较资金安排。",
+      "en": "You prioritised near-term operating evidence. This limits commitment under uncertainty but has an opportunity cost. Compare allocation choices using the same valuation dossier next."
+    },
+    "research": {
+      "zh": "你先搭建长期框架。品牌与渠道提供了研究方向，但还不能替代对增长、利润率和现金流的检验。接下来看看价格和仓位是否合适。",
+      "en": "You began with the long-term framework. Brand and distribution guide the research but do not replace tests of growth, margins and cash flow. Next compare price and position size."
+    },
+    "reserve_cash": {
+      "zh": "你保留了全部现金，没有产生交易盈亏。下一幕价格下降时，你将面对是否继续等待或开始建仓的新决定。",
+      "en": "You retained all cash and recorded no trading P&L. The next price decline creates a fresh choice between waiting and initiating a position."
+    },
+    "buy_40": {
+      "zh": "已按100买入40份。建仓金额4,000，现金6,000；下一观察点按79.50计价。账户变化包含持仓浮亏，并非现金被扣了两次。",
+      "en": "You bought 40 shares at 100 for 4,000 and retained 6,000 cash. The next checkpoint marks shares at 79.50; the drawdown is unrealised, not a second cash debit."
+    },
+    "reduce_exposure": {
+      "zh": "你在79.50退出了40份，已实现亏损820，总资金9,180。这个决定降低了后续价格风险，也放弃了继续持有的潜在收益；结果不能替代对当时资金约束的评价。",
+      "en": "You exited 40 shares at 79.50, realising a loss of 820 and retaining 9,180 cash. You reduced further price exposure and gave up possible gains; the eventual outcome does not replace assessing your constraints at the time."
+    },
+    "hold_rules": {
+      "zh": "你保留了40份，没有追加投入。持有仍然需要继续检验需求和现金流，而不是把浮亏暂未兑现当作没有风险。",
+      "en": "You retained 40 shares without adding capital. Holding still requires testing demand and cash flow; an unrealised loss remains economic risk."
+    },
+    "retain_cash": {
+      "zh": "你继续持有10,000现金。这避免了持仓波动，但在价格回升的路径中会产生机会成本。请在终局留下下一次启动研究或配置资金的条件。",
+      "en": "You retained 10,000 cash. This avoids position volatility but incurs an opportunity cost on the recovery path. Record what would restart research or allocation."
+    },
+    "enter_pullback": {
+      "zh": "你在79.50买入40份，投入3,180，现金剩余6,820。价格较低不等于风险已经消失；估值和需求假设仍需持续核对。",
+      "en": "You bought 40 shares at 79.50 for 3,180 and retained 6,820 cash. A lower price does not remove risk; valuation and demand assumptions still need review."
+    },
+    "keep_position": {
+      "zh": "本轮四次决定已保存。你选择保留当前安排并继续复核；账面盈亏与已实现盈亏会分别列出。",
+      "en": "All four decisions are saved. You retained the allocation for future review; realised and unrealised P&L remain separately reported."
+    },
+    "exit_position": {
+      "zh": "本轮四次决定已保存。剩余持仓已按194转为现金；之前已退出或始终持有现金的账户不会重复交易。",
+      "en": "All four decisions are saved. Remaining shares were converted to cash at 194; accounts already in cash do not trade a second time."
+    }
+  }
+}
