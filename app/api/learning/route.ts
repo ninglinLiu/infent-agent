@@ -35,7 +35,8 @@ export async function GET(req: NextRequest) {
       ctx.db.from('learning_content').select('course_id,script_version'),
     ])
     for (const result of [courses, attempts, entitlements, accessible]) if (result.error) throw result.error
-    return ctx.finish(NextResponse.json({ courses: courses.data?.map(c => ({ ...c, allowed: accessible.data?.some(a => a.course_id === c.id && a.script_version === c.script_version) })), attempts: attempts.data, entitlements: entitlements.data }))
+    const catalog = courses.data?.filter(c => !courses.data?.some(other => other.id === c.id && other.script_version > c.script_version))
+    return ctx.finish(NextResponse.json({ courses: catalog?.map(c => ({ ...c, allowed: accessible.data?.some(a => a.course_id === c.id && a.script_version === c.script_version) })), attempts: attempts.data, entitlements: entitlements.data }))
   } catch (error) { return accountError(error) }
 }
 export async function POST(req: NextRequest) {

@@ -11,7 +11,7 @@ const captions = [
   ['等等，先复核当初的判断。','Wait. Recheck the original thesis.'],
   ['赚了也要复盘。','Review the win, too.'],
 ]
-export function ComicStage({ scene, lang, stopped, reduced }: { scene: number; lang: 'zh' | 'en'; stopped: boolean; reduced: boolean }) {
+export function ComicStage({ scene, lang, stopped, reduced, entryPrice = 100 }: { scene: number; lang: 'zh' | 'en'; stopped: boolean; reduced: boolean; entryPrice?: number | null }) {
   const index = Math.max(0, Math.min(3, scene - 1))
   const [frame,setFrame] = useState(0)
   const [playing,setPlaying] = useState(!reduced && !stopped)
@@ -53,7 +53,7 @@ export function ComicStage({ scene, lang, stopped, reduced }: { scene: number; l
         </g>)}
         <polyline points={mean} fill="none" stroke="#a58cd5" strokeWidth="1.7"/>
         <line x1="20" x2="465" y1={y(current.close)} y2={y(current.close)} stroke="#8d70bd" strokeDasharray="4 5"/>
-        {index>0&&<g><line x1="20" x2="465" y1={y(100)} y2={y(100)} stroke="#77717d" strokeDasharray="3 6"/><text x="26" y={y(100)-8}>{en?'Entry 100.00':'建仓价 100.00'}</text></g>}
+        {index>0&&entryPrice!=null&&<g><line x1="20" x2="465" y1={y(entryPrice)} y2={y(entryPrice)} stroke="#77717d" strokeDasharray="3 6"/><text x="26" y={y(entryPrice)-8}>{en?'Entry ':'建仓价 '}{entryPrice.toFixed(2)}</text></g>}
         <text x="24" y="311">{en?'SCENARIO START':'场景开始'}</text><text x="356" y="311">{en?'DECISION POINT':'决策节点'}</text>
       </svg>
       <div className="comic-chart-controls">

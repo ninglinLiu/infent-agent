@@ -431,3 +431,10 @@
 .comic-chart-panel,.comic-person-panel { min-height:0; }
 .comic-chart-panel { overflow:hidden; }
 @media (max-width:760px) { .academy-root[data-presentation] .comic-simulation .comic-stage { height:auto; } .comic-chart-panel { min-height:400px; } }
+.comic-simulation .comic-ending,
+.comic-simulation .comic-decision-feedback { display: block; }
+.comic-simulation .comic-ending h3 { margin: 0 0 12px; font-size: 20px; color: #29252e; }
+.comic-simulation .comic-ending p,
+.comic-simulation .comic-decision-feedback p { margin: 8px 0; line-height: 1.8; }
+.comic-simulation .comic-ending ol { margin: 16px 0 0; padding-left: 24px; }
+.comic-simulation .comic-ending li { margin: 12px 0; padding-left: 4px; line-height: 1.8; }
