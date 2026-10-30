@@ -1,0 +1,16 @@
+{
+  "url": "https://omniaihello.com",
+  "mockedRequests": 0,
+  "errors": [],
+  "completed": true,
+  "actions": [
+    "wait_quarter",
+    "reserve_cash",
+    "enter_pullback",
+    "exit_position"
+  ],
+  "totalCents": 1458000,
+  "legacyUnchanged": 1,
+  "refreshRestored": true,
+  "passed": true
+}
