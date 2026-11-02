@@ -94,6 +94,10 @@ begin
      or jsonb_array_length(p_orders) not between 1 and 8 or jsonb_typeof(coalesce(p_checks, '[]'::jsonb)) <> 'array' then
     raise exception 'Invalid execution';
   end if;
+  if exists (
+    select 1 from jsonb_to_recordset(p_orders) as x(symbol text)
+    group by x.symbol having count(*) > 1
+  ) then raise exception 'Duplicate order symbol'; end if;
   perform pg_advisory_xact_lock(hashtextextended('sandbox:' || owner_id::text, 0));
   select * into prior from public.sandbox_executions where id = p_operation_id;
   if found then

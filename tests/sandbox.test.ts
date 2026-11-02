@@ -173,6 +173,7 @@ test('sandbox migration: isolation, idempotency, cash/position guards, reset kee
     await assert.rejects(exec(op(), [order({ fill_price: 600, notional: 6000 })]), /slippage band/)
     await assert.rejects(exec(op(), [order({ qty: 300, notional: 150030 })]), /Insufficient cash/)
     await assert.rejects(exec(op(), [order({ side: 'sell', qty: 11, notional: 5501.1 })], 'close'), /Insufficient position/)
+    await assert.rejects(exec(op(), [order({ side: 'sell', qty: 6, notional: 3000.6 }), order({ side: 'sell', qty: 6, notional: 3000.6 })], 'close'), /Duplicate order symbol/)
     await exec(op(), [order({ side: 'sell', qty: 10, fill_price: 499.9, notional: 4999 })], 'close')
     assert.equal((await db.query('select * from sandbox_positions')).rows.length, 0)
     await assert.rejects(db.query("insert into sandbox_accounts(user_id) values ($1)", [a]), /permission denied/)
