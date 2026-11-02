@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
+import { LoginStage } from './LoginStage'
 import { browserAccount } from '@/lib/account/browser'
 import { accountConfig, safeReturnPath } from '@/lib/account/config'
 import { accountTransport } from '@/lib/account/fetch'
@@ -13,6 +15,7 @@ export function LoginForm({ reset = false }: { reset?: boolean }) {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('')
@@ -56,14 +59,27 @@ export function LoginForm({ reset = false }: { reset?: boolean }) {
     }
     finally { setBusy(false) }
   }
-  return <main className="account-page"><header><Link href="/dashboard">← omniAI</Link><button onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}>{lang === 'en' ? '中文' : 'English'}</button></header><section className="account-card"><span className="account-eyebrow">YOUR RESEARCH, YOUR SPACE</span><h1>{reset ? tr('设置新密码', 'Set a new password') : mode === 'register' ? tr('开始你的研究旅程', 'Start your research journey') : tr('欢迎回来', 'Welcome back')}</h1><p>{mode === 'register' && !reset ? tr('设置昵称、邮箱和密码，创建你的个人研究空间。', 'Choose a display name, email, and password for your research space.') : tr('你的对话、学习进度和自选列表，在这里继续。', 'Your conversations, learning progress, and watchlist live here.')}</p>
-    {!client ? <p role="status">{tr('账号服务尚未配置，暂时无法登录。', 'Account service is not configured yet.')}</p> : <form onSubmit={submit}>
-      {!reset && <label>{tr('邮箱', 'Email')}<input type="email" autoComplete="email" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} /></label>}
-      {mode === 'register' && !reset && <label>{tr('昵称', 'Display name')}<input autoComplete="nickname" required maxLength={20} value={name} onChange={e => setName(e.target.value)} /></label>}
-      <label>{tr('密码', 'Password')}<input type="password" autoComplete={reset || mode === 'register' ? 'new-password' : 'current-password'} required minLength={mode === 'login' && !reset ? 1 : 10} maxLength={128} value={password} onChange={e => setPassword(e.target.value)} />{(reset || mode === 'register') && <small>{tr('至少 10 个字符', 'At least 10 characters')}</small>}</label>
-      <button className="account-primary" disabled={busy}>{busy ? tr('处理中…', 'Please wait…') : reset ? tr('保存密码', 'Save password') : mode === 'login' ? tr('登录', 'Sign in') : tr('注册并登录', 'Create account & sign in')}</button>
-    </form>}
-    {notice && <p role="status" className="account-feedback">{notice}</p>}
-    {!reset && <><div className="account-actions"><button disabled={busy} onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setNotice(''); setPassword('') }}>{mode === 'register' ? tr('已有账号？登录', 'Already registered? Sign in') : tr('创建账号', 'Create an account')}</button></div><div className="account-guest"><Link href="/dashboard">{tr('以访客模式体验', 'Continue as a guest')} →</Link><small>{tr('先看看小屋与交易所；登录后使用 AI 并保存学习进度。', 'Explore the house and Exchange. Sign in to use AI and save learning progress.')}</small></div></>}
-  </section></main>
+  return <main className="login-page">
+    <LoginStage />
+    <section className="login-panel">
+      <header><Link href="/dashboard">← {tr('回到街角', 'Back to the corner')}</Link><button type="button" onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}>{lang === 'en' ? '中文' : 'English'}</button></header>
+      <div className="login-form">
+        <h1>{reset ? tr('设置新密码', 'Set a new password') : mode === 'register' ? tr('开始你的研究旅程', 'Start your research journey') : tr('欢迎回来', 'Welcome back')}</h1>
+        <p className="login-lede">{mode === 'register' && !reset ? tr('设置昵称、邮箱和密码，创建你的个人研究空间。', 'Choose a display name, email, and password for your research space.') : tr('你的对话、模拟组合和学习进度，都在这里继续。', 'Your conversations, paper portfolio and learning progress live here.')}</p>
+        {!client ? <p role="status">{tr('账号服务尚未配置，暂时无法登录。', 'Account service is not configured yet.')}</p> : <form onSubmit={submit}>
+          {!reset && <label>{tr('邮箱', 'Email')}<input type="email" autoComplete="email" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} /></label>}
+          {mode === 'register' && !reset && <label>{tr('昵称', 'Display name')}<input autoComplete="nickname" required maxLength={20} value={name} onChange={e => setName(e.target.value)} /></label>}
+          <div className="login-password">
+            <label>{tr('密码', 'Password')}<input type={showPassword ? 'text' : 'password'} autoComplete={reset || mode === 'register' ? 'new-password' : 'current-password'} required minLength={mode === 'login' && !reset ? 1 : 10} maxLength={128} value={password} onChange={e => setPassword(e.target.value)} />{(reset || mode === 'register') && <small>{tr('至少 10 个字符', 'At least 10 characters')}</small>}</label>
+            <button type="button" className="login-eye" aria-label={showPassword ? tr('隐藏密码', 'Hide password') : tr('显示密码', 'Show password')} onClick={() => setShowPassword(value => !value)}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button>
+          </div>
+          <button className="login-submit" disabled={busy}>{busy ? tr('处理中…', 'Please wait…') : reset ? tr('保存密码', 'Save password') : mode === 'login' ? tr('登录', 'Sign in') : tr('注册并登录', 'Create account & sign in')}</button>
+        </form>}
+        {notice && <p role="status" className="login-notice">{notice}</p>}
+        {!reset && <><button type="button" className="login-switch" disabled={busy} onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setNotice(''); setPassword('') }}>{mode === 'register' ? tr('已有账号？登录', 'Already registered? Sign in') : tr('创建账号', 'Create an account')}</button>
+          <div className="login-guest"><Link href="/dashboard">{tr('以访客模式体验', 'Continue as a guest')} →</Link><small>{tr('先看看小屋与交易所；登录后使用 AI 并保存学习进度。', 'Explore the house and Exchange. Sign in to use AI and save learning progress.')}</small></div></>}
+      </div>
+      <footer>{tr('模拟资金，不连接真实券商 · 不构成投资建议', 'Paper money only, no real broker · Not investment advice')}</footer>
+    </section>
+  </main>
 }

@@ -12,8 +12,14 @@ import { BacktestView } from "../views/BacktestView"
 import { RiskView } from "../views/RiskView"
 import { JournalView } from "../views/JournalView"
 import { SettingsView } from "./SettingsView"
+import { PortfolioView } from "../views/PortfolioView"
 import { motion, AnimatePresence } from "framer-motion"
+import { useEffect } from "react"
 import { useT, type DictKey } from "@/lib/i18n"
+import { useDash } from "@/lib/dash-store"
+
+/** 从 Agent 页跳过来时指定落在哪个页签、看哪个代码 */
+export type ExchangeFocus = { view: ViewId; symbol?: string; sequence: number }
 
 const VIEW_META: Record<ViewId, { title: DictKey; sub: DictKey; tag: string }> = {
   workspace: { title: "view.workspace.title", sub: "view.workspace.sub", tag: "01" },
@@ -24,6 +30,7 @@ const VIEW_META: Record<ViewId, { title: DictKey; sub: DictKey; tag: string }> =
   risk:      { title: "view.risk.title",      sub: "view.risk.sub",      tag: "06" },
   journal:   { title: "view.journal.title",   sub: "view.journal.sub",   tag: "07" },
   settings:  { title: "view.settings.title",  sub: "view.settings.sub",  tag: "08" },
+  portfolio: { title: "view.portfolio.title", sub: "view.portfolio.sub", tag: "09" },
 }
 
 function ViewTitleBar() {
@@ -62,25 +69,33 @@ function ViewRenderer({ embedded = false }: { embedded?: boolean }) {
         {view === "risk"      && <RiskView />}
         {view === "journal"   && <JournalView />}
         {view === "settings"  && <SettingsView />}
+        {view === "portfolio" && <PortfolioView />}
       </motion.div>
     </AnimatePresence>
   )
 }
 
-function ExchangeTabs() {
+function ExchangeTabs({ focus }: { focus?: ExchangeFocus }) {
   const { view, setView } = useView()
+  const { selectSymbol } = useDash()
   const t = useT()
-  const tabs: ViewId[] = ['markets', 'workspace', 'discover', 'journal', 'backtest', 'risk', 'settings']
+  // 旧的模拟页签（工作台、发现、回测、风险、日志）都是写死的演示数据，已从导航移除，文件保留便于回滚
+  const tabs: ViewId[] = ['markets', 'portfolio']
+  useEffect(() => {
+    if (!focus) return
+    setView(focus.view)
+    if (focus.symbol) selectSymbol(focus.symbol)
+  }, [focus, setView, selectSymbol])
   return <nav className="unified-subnav" aria-label="Exchange">
     {tabs.map(id => <button type="button" key={id} aria-current={view === id ? 'page' : undefined} onClick={() => setView(id)}>{t(VIEW_META[id].title)}</button>)}
   </nav>
 }
 
-export function RepositoryConsole({ initialView, onExit, embedded = false }: { initialView: ViewId; onExit: () => void; embedded?: boolean }) {
+export function RepositoryConsole({ initialView, onExit, embedded = false, focus }: { initialView: ViewId; onExit: () => void; embedded?: boolean; focus?: ExchangeFocus }) {
   return (
-    <ViewProvider initialView={initialView}>
+    <ViewProvider initialView={focus?.view ?? initialView}>
         <div className={embedded ? 'unified-exchange' : "h-screen w-screen bg-[var(--bg-0)] text-[var(--fg-0)] flex flex-col overflow-hidden hud-grid"}>
-          {embedded ? <ExchangeTabs /> : <TopBar onExit={onExit} />}
+          {embedded ? <ExchangeTabs focus={focus} /> : <TopBar onExit={onExit} />}
           <div className="flex-1 flex min-h-0">
             {!embedded && <LeftRail onExit={onExit} />}
             <div className="flex-1 min-w-0 flex flex-col min-h-0">

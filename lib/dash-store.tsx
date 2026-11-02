@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useMemo, useReducer, useRef } f
 import { INITIAL_PORTFOLIO, SECTORS, type Holding, type SectorCell } from "@/lib/mock/market"
 import { STRATEGIES, type Strategy, type StrategyAction } from "@/lib/mock/agent"
 import { DEFAULT_INSTRUMENT, resolveInstrument } from "@/lib/market/presets"
+import { findAsset } from "@/lib/market/universe"
 import type { ChartInterval, Instrument } from "@/lib/market/types"
 
 // An execution marker placed on the K-line chart
@@ -273,6 +274,12 @@ export function DashProvider({ children }: { children: React.ReactNode }) {
     const resolved = resolveInstrument(input)
     if (resolved) {
       dispatch({ type: "SET_CHART_INSTRUMENT", instrument: resolved })
+      return
+    }
+    // 行情白名单里的指数、黄金、港股等不在旧预设里，用白名单的 Yahoo 代码画图
+    const asset = findAsset(input)
+    if (asset) {
+      dispatch({ type: "SET_CHART_INSTRUMENT", instrument: { symbol: asset.symbol, name: asset.name, nameEn: asset.nameEn, market: asset.cls.toUpperCase(), yahoo: asset.yahoo, timeZone: asset.tz } })
       return
     }
     const symbol = input.trim().toUpperCase()

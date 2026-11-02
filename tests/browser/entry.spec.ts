@@ -1,11 +1,13 @@
 import { test, expect } from '@playwright/test'
 
-test('root opens login and the explicit guest entry preserves account protection', async ({ page, request }, info) => {
+test('root is the landing page; login and the explicit guest entry preserve account protection', async ({ page, request }, info) => {
   test.skip(info.project.name !== 'desktop', 'Desktop entry flow')
   const root = await request.get('/', { maxRedirects: 0 })
-  expect(root.status()).toBe(307)
-  expect(root.headers().location).toBe('/login')
+  expect(root.status()).toBe(200)
+  expect((await request.get('/about', { maxRedirects: 0 })).headers().location).toBe('/')
   await page.goto('/')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('听见心跳')
+  await page.getByRole('link', { name: '登录', exact: true }).click()
   await expect(page).toHaveURL(/\/login$/)
   await expect(page.locator('input[type=email]')).toBeVisible()
   await page.getByRole('button', { name: '创建账号', exact: true }).click()

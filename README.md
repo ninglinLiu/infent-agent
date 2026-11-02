@@ -87,14 +87,18 @@ flowchart TD
 |---|---|
 | `get_price(symbol)` | BTC / ETH / SOL 使用 Coinbase spot；股票、ETF 使用 Yahoo Finance。返回币种、来源与时间信息，报价可能延迟。 |
 | `get_onchain_stats(address)` | 校验 Ethereum mainnet，在同一区块哈希下读取原生 ETH 余额和 outgoing nonce；保留大整数精度，不推断代币持仓、收益或身份。 |
+| `analyze_drivers(symbol)` | 用近一年真实日收益计算 0–5 个交易日的领先-滞后相关，先对同日大盘收益做残差化，再按 Bonferroni 校正筛选；区分「独立驱动」与「只是跟着大盘动」。是相关，不是因果。 |
+| `draft_strategy(spec)` | 把对话变成结构化策略书（白名单标的、权重、再平衡、回撤止损、基准），服务端校验后用约两年真实复权日线回测，返回收益、最大回撤、夏普与基准对比。 |
 
 工具参数先经 Zod 校验，模型不能指定任意请求 URL。失败返回 `INVALID_ARGUMENTS`、`TIMEOUT` 或 `UNAVAILABLE` 等明确状态，不生成替代报价。每次执行保留名称、参数、结果和耗时；数据提供方时间与本系统查询时间分开记录。例如 Coinbase spot 不提供报价时间，`quotedAt` 为 `null`，`observedAt` 仅表示查询时间。
 
-### 结构化输出：模型选择，服务端验证
+### 结构化输出：模型起草，服务端校验、回测、执行
 
-模型只能从已有候选教学卡片中选择 ID 并给出理由。默认 `json_object` 模式将 Schema 放入提示词；支持严格 Schema 的模型可配置 `json_schema`。两种模式均在服务端校验字段、候选 ID 和重复项，失败则回退规则匹配，无候选时返回空列表。
+策略卡来自 `draft_strategy` 的工具结果，而不是预设模板：模型提交的参数先经 Zod Schema 校验（标的白名单、权重和不超过 100%、止损区间），不合格时返回具体错误让模型改正后重试。聊天文字、策略卡、回测曲线和沙箱成交都来自同一份校验过的 spec。
 
-教学卡片与模拟持仓沿用预设数据，模型不会生成可执行的真实交易订单。
+「部署到模拟沙箱」由服务端按实时报价撮合（规则化的滑点与手续费），与 Chainlink 链上喂价比对偏离，再通过 `sandbox_execute` 函数写入 Supabase。函数会重新检查所有权、额度、金额算术、滑点区间、现金与持仓，客户端无法直接写表。全部为模拟资金，不连接任何真实券商。数据源：实时报价 Yahoo Finance；链上校验 Chainlink（Arbitrum One）。
+
+早期版本的教学卡片选择逻辑（`structured.ts`、`strategy-match.ts`）保留在仓库中，便于回滚，聊天接口已不再调用。
 
 ## 评测与验证
 

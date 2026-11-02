@@ -1,58 +1,45 @@
 "use client"
 
-import { HeatMap } from "../HeatMap"
 import { KLineChart } from "../KLineChart"
-import { NewsTicker } from "../NewsTicker"
-import { TOP_TICKERS } from "@/lib/mock/market"
-import { Globe2 } from "lucide-react"
 import { useDash } from "@/lib/dash-store"
+import { useLang } from "@/lib/i18n"
+import { useLiveMarket } from "@/lib/market/live"
+import { assetName, findAsset } from "@/lib/market/universe"
+import { MarketBoard, OraclePanel, TickerTape, WorldClocks } from "@/components/terminal/MarketBoard"
+import { Delta, FlashNumber, fmtPrice, Panel, Sparkline } from "@/components/terminal/primitives"
+
+/** 涨跌榜：从实时报价里现算，不再用写死的新闻和板块热力 */
+function Movers({ onPick }: { onPick: (symbol: string) => void }) {
+  const live = useLiveMarket()
+  const { lang } = useLang()
+  const tr = (zh: string, en: string) => lang === "en" ? en : zh
+  const rows = Object.values(live.quotes).filter(q => q.changePct !== null && findAsset(q.symbol)?.cls !== "index")
+    .sort((a, b) => Math.abs(b.changePct!) - Math.abs(a.changePct!)).slice(0, 9)
+  return <Panel code="MOV" title={tr("异动榜 · 今日涨跌幅", "Movers · today")}>
+    {!rows.length ? <p className="t-empty">{tr("等待行情…", "Waiting for quotes…")}</p> : <ul className="t-movers">{rows.map(q => {
+      const asset = findAsset(q.symbol)
+      return <li key={q.symbol}><button type="button" onClick={() => onPick(q.symbol)}>
+        <span className="t-sym">{q.symbol}</span><small className="t-dim">{asset ? assetName(asset, lang) : ""}</small>
+        <Sparkline values={q.spark} width={64} height={18} />
+        <FlashNumber value={q.price} flash={live.flashes[q.symbol]}>{fmtPrice(q.price, q.symbol)}</FlashNumber>
+        <Delta value={q.changePct} />
+      </button></li>
+    })}</ul>}
+  </Panel>
+}
 
 export function MarketsView() {
   const { selectSymbol } = useDash()
   return (
-    <div className="w-full min-w-0 h-full overflow-y-auto grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-2.5">
-      <div className="flex flex-col gap-2.5 min-h-0">
-        <div className="surface px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Globe2 className="h-3.5 w-3.5 text-info" />
-              <span className="text-[11px] uppercase tracking-wider text-dim">Global Markets Overview</span>
-            </div>
-            <span className="chip info">16 assets · Demo</span>
-          </div>
-          <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-            {TOP_TICKERS.map((row, i) => {
-              const up = row.chg >= 0
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => selectSymbol(row.sym)}
-                  className="surface-raised px-3 py-2 text-left hover:border-[var(--line-2)] transition"
-                >
-                  <div className="text-[10px] text-ghost font-mono-ui">{row.sym}</div>
-                  <div className="tabular text-[15px] font-display font-semibold">
-                    {row.px.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                  </div>
-                  <div className={`tabular text-[11px] font-mono-ui ${up ? "text-up" : "text-down"}`}>
-                    {up ? "+" : ""}
-                    {row.chg.toFixed(2)}%
-                  </div>
-                </button>
-              )
-            })}
-          </div>
+    <div className="term t-exchange w-full min-w-0 h-full overflow-y-auto">
+      <div className="t-topbar"><span className="t-brand">OMNI<b>·</b>EXCHANGE</span><WorldClocks /></div>
+      <TickerTape />
+      <div className="t-page">
+        <div className="t-markets">
+          <div className="t-chart-wrap"><KLineChart /></div>
+          <div className="t-side-col"><Movers onPick={selectSymbol} /><OraclePanel limit={9} /></div>
         </div>
-
-        <div className="flex-[1.4] min-h-[320px]">
-          <KLineChart />
-        </div>
-        <div className="flex-1 min-h-[260px]">
-          <HeatMap />
-        </div>
-      </div>
-      <div className="min-h-0">
-        <NewsTicker />
+        <MarketBoard onPick={selectSymbol} />
       </div>
     </div>
   )

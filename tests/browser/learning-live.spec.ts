@@ -60,7 +60,8 @@ test('staging A/B/C real sessions restore data and reject cross-account access',
   const enterCase = async (p: Page) => {
     await p.goto('/dashboard')
     await p.locator('.night-entry-card--academy').click()
-    await p.getByRole('button', { name: '案例实践', exact: true }).click()
+    await p.getByRole('button', { name: '历史复盘', exact: true }).click()
+    await p.getByRole('button', { name: '查看旧版可口可乐漫画练习', exact: true }).click()
   }
   const verifyA = async (p: Page) => {
     const data = await json(p, `/api/learning?attempt=${A.attempt}`)
@@ -81,7 +82,8 @@ test('staging A/B/C real sessions restore data and reject cross-account access',
     await expect(p.getByRole('progressbar', { name: '场景进度' })).toHaveAttribute('aria-valuenow', '2')
     await p.reload()
     await p.locator('.night-entry-card--academy').click()
-    await p.getByRole('button', { name: '案例实践', exact: true }).click()
+    await p.getByRole('button', { name: '历史复盘', exact: true }).click()
+    await p.getByRole('button', { name: '查看旧版可口可乐漫画练习', exact: true }).click()
     await expect(p.getByTestId('account-total')).toHaveText('9,180.00', { timeout: 30000 })
     const afterPageVisit = await json(p, '/api/profile')
     expect(afterPageVisit.lastSignInAt).toBe(first.lastSignInAt)

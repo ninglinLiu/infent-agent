@@ -40,6 +40,8 @@ const DICT = {
   "view.risk.sub":        { zh: "因子分解 · 压力测试 · 持仓暴露", en: "Factor breakdown · stress scenarios · exposure" },
   "view.journal.title":   { zh: "交易日志",      en: "Journal" },
   "view.journal.sub":     { zh: "执行历史 · 实现盈亏 · 审计日志", en: "Execution history · realised PnL · audit log" },
+  "view.portfolio.title": { zh: "模拟组合",      en: "Paper portfolio" },
+  "view.portfolio.sub":   { zh: "沙箱持仓 · 实时盯市 · 成交与预言机记录", en: "Sandbox positions · live marks · fills & oracle log" },
   "view.settings.title":  { zh: "系统设置",      en: "Settings" },
   "view.settings.sub":    { zh: "用户画像 · 外观 · 通知 · 账户安全", en: "Profile · appearance · notifications · security" },
 
@@ -74,8 +76,8 @@ const DICT = {
   "kline.ai.win":     { zh: "AI 胜率", en: "AI win rate" },
   "kline.legend.history": { zh: "历史 K 线", en: "Historical" },
   "kline.legend.forecast":{ zh: "AI 预测轨迹", en: "AI forecast" },
-  "kline.legend.buy":     { zh: "BUY 信号", en: "BUY signal" },
-  "kline.legend.sell":    { zh: "SELL 信号", en: "SELL signal" },
+  "kline.legend.buy":     { zh: "沙箱买入", en: "Sandbox buy" },
+  "kline.legend.sell":    { zh: "沙箱卖出", en: "Sandbox sell" },
   "kline.exec.title":     { zh: "策略执行标记", en: "Strategy marks" },
 
   // Portfolio

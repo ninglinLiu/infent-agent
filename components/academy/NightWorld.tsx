@@ -12,7 +12,7 @@ import { AMBER, Bake, Books, Box, Cable, CYAN, Glow, Lantern, Panel, PINK, Pipe,
 import { Abacus, ChristmasTree, CurveMirror, LessonMachine, Maneki, Postbox, RoadMarks } from './NightDistrict'
 import { shojiTexture, texture } from './night-textures'
 
-type Props = { onOpen: (view: NightDestination) => void; onAbout: () => void; still: boolean; active: boolean; onReady: () => void; onFailure: () => void; reset: number; focus: NightDestination | null }
+type Props = { onOpen: (view: NightDestination) => void; onAbout: () => void; still: boolean; active: boolean; onReady: () => void; onFailure: () => void; reset: number; focus: NightDestination | null; sway?: boolean }
 type Tier = 'high' | 'mid' | 'low'
 
 function Shoji({ p, size }: { p: V3; size: [number, number] }) {
@@ -277,7 +277,7 @@ function StreetBackdrop() {
 const ORIGIN = new THREE.Vector2()
 const HOME: V3 = [3.7, 7.6, 20.2], LOOK: V3 = [.55, 3.0, .15]
 
-function CameraRig({ reset, focus, still }: { reset: number; focus: NightDestination | null; still: boolean }) {
+function CameraRig({ reset, focus, still, sway = false }: { reset: number; focus: NightDestination | null; still: boolean; sway?: boolean }) {
   const { camera, size } = useThree()
   const controls = useRef<React.ElementRef<typeof OrbitControls>>(null)
   const goal = useRef(new THREE.Vector3())
@@ -288,7 +288,14 @@ function CameraRig({ reset, focus, still }: { reset: number; focus: NightDestina
     camera.lookAt(...LOOK)
     controls.current?.target.set(...LOOK); controls.current?.update()
   }, [camera, size.width, size.height, reset])
-  useFrame((_, delta) => {
+  useFrame(({ clock }, delta) => {
+    // 登录页背景：绕视线中心小幅摆动，不转到房子背面
+    if (sway && !still) {
+      const a = Math.sin(clock.elapsedTime * .16) * .3
+      const dx = HOME[0] - LOOK[0], dz = HOME[2] - LOOK[2]
+      camera.position.set(LOOK[0] + dx * Math.cos(a) + dz * Math.sin(a), HOME[1], LOOK[2] - dx * Math.sin(a) + dz * Math.cos(a))
+      camera.lookAt(...LOOK)
+    }
     if (!focus || !controls.current) return
     if (focus === 'academy') { goal.current.set(4.4, 5.8, 10); target.current.set(-.2, 3.5, .9) }
     else if (focus === 'practice' || focus === 'lessons') { goal.current.set(6.7, 3.6, 7.4); target.current.set(2.1, 1.45, .8) }
@@ -296,7 +303,7 @@ function CameraRig({ reset, focus, still }: { reset: number; focus: NightDestina
     const k = still ? 1 : 1 - Math.exp(-4 * Math.min(delta, .05))
     camera.position.lerp(goal.current, k); controls.current.target.lerp(target.current, k); controls.current.update()
   })
-  return <OrbitControls ref={controls} enabled={!focus} target={LOOK} enablePan={false} enableZoom minDistance={8.5} maxDistance={30} minPolarAngle={.25} maxPolarAngle={Math.PI / 2 - .05} rotateSpeed={.65} zoomSpeed={.85} enableDamping dampingFactor={.065} />
+  return <OrbitControls ref={controls} enabled={!focus && !sway} target={LOOK} enablePan={false} enableZoom minDistance={8.5} maxDistance={30} minPolarAngle={.25} maxPolarAngle={Math.PI / 2 - .05} rotateSpeed={.65} zoomSpeed={.85} enableDamping dampingFactor={.065} />
 }
 
 /**
@@ -378,7 +385,7 @@ export default function NightWorld(props: Props) {
       <RoadMarks /><LessonMachine onOpen={() => props.onOpen('lessons')} /><Postbox /><CurveMirror />
     </Bake>
     <Unreflected><Rain still={props.still} /><Ripples still={props.still} /></Unreflected>
-    <CameraRig reset={props.reset} focus={props.focus} still={props.still} />
+    <CameraRig reset={props.reset} focus={props.focus} still={props.still} sway={props.sway} />
     {tier !== 'low' && <NeonBloom />}<ShadowBake tier={tier} />
     <FrameBudget onSlow={onSlow} active={props.active && !props.still && tier !== 'low'} limit={tier === 'high' ? 1 / 38 : 1 / 26} /><Lifecycle onReady={props.onReady} onFailure={props.onFailure} />
   </Canvas>

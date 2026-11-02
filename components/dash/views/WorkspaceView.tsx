@@ -3,26 +3,44 @@
 import { AcademyScene } from '@/components/academy/ImmersiveScene'
 import { useAcademy } from '@/components/academy/AcademyProvider'
 import { useView } from '../view-context'
-import { ArrowRight, BookOpen, Compass } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { useAcademyLocale } from '@/components/academy/useAcademyLocale'
 import { useLearning } from '@/components/academy/LearningProvider'
+import { REPLAY_CASES } from '@/lib/academy/replay'
 
 export function WorkspaceView() {
   const { state } = useAcademy()
   const { setView } = useView()
-  const { tr, displayName } = useAcademyLocale()
-  const { data, ready, error, retry, select, act } = useLearning()
-  const attempt = data.attempts.find(a => a.course_id === 'coca-cola')
-  const completed = state.lessonStep >= 6 && attempt?.status === 'completed'
-  return <div className="academy-learning-home">
-    <section className="academy-welcome"><div><div className="academy-eyebrow">YOUR FIRST CHAPTER</div><h1>{tr(`${displayName}，欢迎回到学习室。`, `Welcome to the study, ${displayName}.`)}</h1><p>{completed ? tr('第一章已完成。带着你的学习方法，继续观察与思考。', 'Chapter one is complete. Keep observing, questioning, and learning.') : tr('先学会提问，再学会判断。两位导师正在等你。', 'Start with questions. Build your judgment. Your mentors are waiting.')}</p><button className="academy-primary" onClick={() => setView(state.lessonStep >= 6 ? 'simulation' : 'learning')}>{completed ? tr('查看我的实践记录', 'Review my practice') : state.lessonStep >= 6 ? tr('开始角色模拟', 'Start role simulation') : state.lessonStep > 0 ? tr('继续今天的学习', 'Continue learning') : tr('开始第一节短课', 'Start the first lesson')}<ArrowRight size={16} /></button></div><div className="academy-welcome-scene"><AcademyScene mentor={state.lessonStep >= 6 ? 'quant' : 'value'} compact /><span>{tr('价值的眼光 × 量化的思维', 'Value investing × Quant thinking')}</span></div></section>
-    <div className="academy-page-heading"><div><div className="academy-eyebrow">LEARN AT YOUR OWN PACE</div><h2>{tr('今天，向前一小步。', 'One small step today.')}</h2><p>{tr('短课帮助你理解，故事让你亲手练习。', 'Build understanding with short lessons. Put it into practice through a story.')}</p></div></div>
-    <div className="academy-study-cards">
-      <button className="academy-study-card" onClick={() => setView('learning')}><BookOpen size={25} /><span className="academy-eyebrow">01 / LEARN</span><h3>{tr('知识短课', 'Short lessons')}</h3><p>{tr('价格与价值、风险意识、可检验的判断。', 'Price and value, risk awareness, and testable judgments.')}</p><span className="academy-study-card-foot">{Math.floor(state.lessonStep / 2)} / 3 {tr('节完成', 'lessons complete')}<ArrowRight size={18} /></span></button>
-      <button className="academy-study-card" onClick={() => { if (attempt) void select(attempt.id); setView('simulation') }}><Compass size={25} /><span className="academy-eyebrow">02 / PRACTICE · {tr('免费体验', 'FREE')}</span><h3>{tr('可口可乐价值投资练习', 'Coca-Cola value investing')}</h3><p>{tr('四个场景完整免费：研究、估值、仓位和复盘。', 'Four free scenes: research, valuation, position sizing and reflection.')}</p><span className="academy-study-card-foot">{!ready ? tr('正在读取', 'Loading') : attempt?.status === 'completed' ? tr('已完成', 'Completed') : attempt ? tr(`继续学习 · 场景 0${attempt.scene}`, `Continue learning · Scene 0${attempt.scene}`) : tr('开始学习', 'Start learning')}<ArrowRight size={18} /></span></button>
-      <div className="academy-study-card"><BookOpen size={25} /><span className="academy-eyebrow">03 / ADVANCED</span><h3>{tr('价值投资进阶案例包', 'Advanced value cases')}</h3><p>{tr('筹备中，暂不销售。¥39 一次性为内部测试价格，非正式售价。', 'In preparation, not for sale. ¥39 one-time is an internal test price, not a final price.')}</p><span className="academy-study-card-foot">{data.entitlements.some(e => e.package_id === 'value-advanced' && e.active) ? tr('已解锁 · 内容筹备中', 'Unlocked · Content in preparation') : tr('需要解锁 · 内容筹备中', 'Requires unlock · In preparation')}</span>{data.entitlements.some(e => e.package_id === 'value-advanced' && e.active && e.source === 'demo') && <small>{tr('演示权益，不代表付款', 'Demo access, not a payment')}</small>}
-      {data.courses.filter(c => c.availability === 'internal' && c.allowed).map(c => <button key={c.id} className="academy-secondary" onClick={() => { void act('start', '', c.id); setView('simulation') }}>{tr('进入内部解锁测试', 'Open internal access test')}</button>)}</div>
+  const { tr, displayName, lang } = useAcademyLocale()
+  const { data, error, retry, act } = useLearning()
+  const lessonsDone = Math.min(3, Math.floor(state.lessonStep / 2))
+  const replaysDone = REPLAY_CASES.filter(item => state.replays?.[item.id]).length
+  const next = lessonsDone < 3 ? 'learning' as const : 'simulation' as const
+  const label = lessonsDone === 0 ? tr('开始第一节短课', 'Start the first lesson') : lessonsDone < 3 ? tr('继续今天的学习', 'Continue learning') : tr('去走一段真实历史', 'Walk through real history')
+  return <div className="study-page study-home">
+    <section className="study-hero">
+      <div className="study-hero-copy">
+        <h1>{tr(`${displayName}，欢迎回到学习室。`, `Welcome to the study, ${displayName}.`)}</h1>
+        <p>{tr('这里不背概念。用真实行情算一遍回撤和仓位，再回到 2008、2020 那些时刻，亲手做一次决定。', 'No memorizing here. Work out drawdown and position size on real prices, then go back to moments like 2008 and 2020 and make the call yourself.')}</p>
+        <button type="button" className="study-btn primary" onClick={() => setView(next)}>{label}<ArrowRight size={16} /></button>
+      </div>
+      <div className="study-hero-scene"><AcademyScene mentor={lessonsDone >= 3 ? 'quant' : 'value'} compact /></div>
+    </section>
+    <div className="study-tracks">
+      <button type="button" className="study-track" onClick={() => setView('learning')}>
+        <h2>{tr('知识短课', 'Short lessons')}</h2>
+        <p>{tr('回撤、仓位、分散。拖动真实行情，答对才算过。', 'Drawdown, position size, diversification. Drag through real prices; you pass by getting it right.')}</p>
+        <div className="study-progress" role="progressbar" aria-label={tr('短课进度', 'Lesson progress')} aria-valuemin={0} aria-valuemax={3} aria-valuenow={lessonsDone}><i style={{ width: `${lessonsDone / 3 * 100}%` }} /></div>
+        <span className="study-case-foot"><span>{lessonsDone} / 3 {tr('节完成', 'lessons complete')}</span><ArrowRight size={16} /></span>
+      </button>
+      <button type="button" className="study-track" onClick={() => setView('simulation')}>
+        <h2>{tr('历史复盘', 'History replays')}</h2>
+        <p>{REPLAY_CASES.map(item => item.name[lang === 'en' ? 'en' : 'zh']).join(lang === 'en' ? ', ' : '、')}。</p>
+        <div className="study-progress" role="progressbar" aria-label={tr('复盘进度', 'Replay progress')} aria-valuemin={0} aria-valuemax={REPLAY_CASES.length} aria-valuenow={replaysDone}><i style={{ width: `${replaysDone / REPLAY_CASES.length * 100}%` }} /></div>
+        <span className="study-case-foot"><span>{replaysDone} / {REPLAY_CASES.length} {tr('个案例完成', 'cases complete')}</span><ArrowRight size={16} /></span>
+      </button>
     </div>
-    {error && <p role="alert">{error} <button onClick={() => void retry()}>{tr('重新加载', 'Retry')}</button></p>}
+    {data.courses.filter(c => c.availability === 'internal' && c.allowed).map(c => <button key={c.id} type="button" className="study-legacy" onClick={() => { void act('start', '', c.id); setView('simulation') }}>{tr('进入内部解锁测试', 'Open internal access test')}</button>)}
+    {error && <p role="alert">{error} <button type="button" onClick={() => void retry()}>{tr('重新加载', 'Retry')}</button></p>}
   </div>
 }

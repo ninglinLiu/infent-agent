@@ -37,14 +37,15 @@ test('lavender house, animated AI, and shared tools remain consistent in both la
     candles: Array.from({ length: 30 }, (_, i) => ({ time: 1760000000 + i * 3600, open: 100 + i, close: 101 + i, high: 103 + i, low: 99 + i, volume: 1000 + i * 100 })),
   }
   await page.route('**/api/market/klines?**', route => route.fulfill({ json: marketFixture }))
-  await page.getByRole('button', { name: '刷新行情', exact: true }).click()
-  await expect(page.locator('.quant-price')).toHaveText('126.5')
-  await expect(page.locator('.quant-source')).toContainText('Yahoo Finance')
-  await page.getByRole('button', { name: '打开交易所', exact: false }).click()
+  // 研究画布在行情源不可用时给出明确状态，而不是空白或旧数字
+  await expect(page.locator('.research-canvas')).toContainText('行情源暂不可用')
+  const rail = page.locator('.unified-rail')
+  await rail.getByRole('button', { name: '交易所', exact: true }).click()
   await expect(page.locator('[data-view="markets"]')).toBeVisible()
+  await expect(page.locator('.t-chart-wrap')).toContainText('126.50')
+  await expect(page.locator('.t-chart-wrap')).toContainText('Yahoo')
   await page.waitForTimeout(600)
   await page.screenshot({ path: 'docs/collab/visual-restoration/exchange-zh.png' })
-  const rail = page.locator('.unified-rail')
   await rail.getByRole('button', { name: '学习室', exact: true }).click()
   await expect(page.locator('.academy-gate')).toBeVisible()
   await page.waitForTimeout(1600)

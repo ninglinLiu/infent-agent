@@ -10,7 +10,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { splitMeta, type ChatMeta } from './protocol'
+import { splitEvents, splitMeta, type ChatMeta, type StreamEvent } from './protocol'
 
 export type WireMessage = { role: 'user' | 'assistant'; content: string }
 
@@ -20,6 +20,13 @@ export type StreamCallbacks = {
   /** 流结束时回调，带服务端返回的元数据 */
   onDone: (text: string, meta: ChatMeta | null) => void
   onError?: (message: string) => void
+  /** 工具开始/结束事件，按到达顺序回调一次 */
+  onEvent?: (event: StreamEvent) => void
+}
+
+/** 去掉元数据和工具事件后的正文 */
+function bodyText(raw: string) {
+  return splitEvents(splitMeta(raw).text).text
 }
 
 export function useChatStream() {
@@ -38,7 +45,8 @@ export function useChatStream() {
       messages: WireMessage[],
       opts: { lang?: 'zh' | 'en'; surface?: string; conversationId?: string; onConversation?: (id: string) => void } & StreamCallbacks
     ) => {
-      const { onText, onDone, onError, lang = 'zh', surface } = opts
+      const { onText, onDone, onError, onEvent, lang = 'zh', surface } = opts
+      let delivered = 0
 
       abortRef.current?.abort()
       const ctrl = new AbortController()
@@ -81,15 +89,19 @@ export function useChatStream() {
           if (done) break
           raw += decoder.decode(value, { stream: true })
           // 元数据一定在最后，流中途只把分隔符之前的部分当正文
-          onText(splitMeta(raw).text)
+          const { text, events } = splitEvents(splitMeta(raw).text)
+          for (; delivered < events.length; delivered++) onEvent?.(events[delivered])
+          onText(text)
         }
 
         raw += decoder.decode()
-        const { text, meta } = splitMeta(raw)
+        const { text: body, meta } = splitMeta(raw)
+        const { text, events } = splitEvents(body)
+        for (; delivered < events.length; delivered++) onEvent?.(events[delivered])
         onDone(text, meta)
       } catch (e) {
         if ((e as Error)?.name === 'AbortError') {
-          onDone(splitMeta(raw).text || (lang === 'en' ? 'Generation stopped.' : '已停止生成。'), null)
+          onDone(bodyText(raw) || (lang === 'en' ? 'Generation stopped.' : '已停止生成。'), null)
           return
         }
         const msg =
@@ -97,7 +109,7 @@ export function useChatStream() {
             ? 'Network error while contacting the assistant.'
             : '连接助手时出现网络错误。'
         onError?.(msg)
-        onDone(splitMeta(raw).text || msg, null)
+        onDone(bodyText(raw) || msg, null)
       } finally {
         if (abortRef.current === ctrl) {
           abortRef.current = null

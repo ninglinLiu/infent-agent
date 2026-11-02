@@ -60,7 +60,7 @@ test('loop budget disables tools and rejects a provider that ignores the limit',
     return sse([call(`c${round}`, 'unknown', '{}')])
   }
   await assert.rejects(runAgent([{ role: 'user', content: 'repeat' }], { ...options(), fetcher, onText() {} }), /limit/)
-  assert.equal(round, 4)
+  assert.equal(round, AGENT_LIMITS.rounds + 1)
 })
 test('tools validate inputs and never fetch URLs supplied as symbols', async () => {
   const fetcher: typeof fetch = async () => { throw new Error('must not fetch') }

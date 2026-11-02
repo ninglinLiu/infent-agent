@@ -43,7 +43,8 @@ test('original simulation UI saves, retries, restores, completes and retains old
     })
     const enter=async()=>{
       await page.goto('/dashboard'); await page.locator('.night-entry-card--academy').click()
-      await page.getByRole('button',{name:'案例实践',exact:true}).click()
+      await page.getByRole('button',{name:'历史复盘',exact:true}).click()
+      await page.getByRole('button',{name:'查看旧版可口可乐漫画练习',exact:true}).click()
     }
     await enter()
     await page.getByRole('button',{name:'开始学习',exact:true}).click()

@@ -6,6 +6,10 @@ import "./academy.css"
 import "./immersive.css"
 import "./night-study.css"
 import './account.css'
+import './terminal.css'
+import './login.css'
+import './study.css'
+import './landing.css'
 import { BRAND } from "@/lib/brand"
 import { Providers } from "./providers"
 import { PwaInstall } from "@/components/PwaInstall"

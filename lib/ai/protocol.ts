@@ -6,14 +6,48 @@
  * 而且即使元数据没送到，正文依然可读（优雅降级）。
  *
  * 响应体形如：
- *   正文逐字流式输出……
- *   \n<<<INFENT_META>>>{"strategyIds":["stead-grow"],"sources":["预注册证伪流程"]}
+ *   正文逐字流式输出……␞{"type":"tool_start",…}␞……正文继续……
+ *   \n<<<INFENT_META>>>{"strategyIds":[],"sources":["预注册证伪流程"]}
+ *
+ * 工具事件夹在正文里，用 U+001E（记录分隔符）包裹。服务端会从模型正文里删掉这个字符，
+ * JSON 里的 < 也转义，所以事件既不会被模型伪造，也不会和元数据分隔符混淆。
+ * 不认识事件的旧客户端只会看到多出的控制字符，正文依旧可读。
  */
 
 import type { ToolTrace } from './tools'
 import type { StrategySelection } from './structured'
 
 export const META_DELIMITER = '\n<<<INFENT_META>>>'
+export const EVENT_MARK = '\u001e'
+
+export type StreamEvent =
+  | { type: 'tool_start'; id: string; name: string; arguments: Record<string, unknown> }
+  | { type: 'tool_end'; trace: ToolTrace }
+
+export function encodeEvent(event: StreamEvent): string {
+  return EVENT_MARK + JSON.stringify(event).replace(/</g, '\\u003c') + EVENT_MARK
+}
+
+export function sanitizeModelText(text: string): string {
+  return text.split(EVENT_MARK).join('')
+}
+
+/** 从（已去掉元数据的）正文里取出完整事件；尚未收完的事件留到下一次解析。 */
+export function splitEvents(raw: string): { text: string; events: StreamEvent[] } {
+  const parts = raw.split(EVENT_MARK)
+  // 段数为偶数说明最后一个事件还没收到结束符
+  const complete = parts.length % 2 === 1 ? parts : parts.slice(0, -1)
+  const events: StreamEvent[] = []
+  let text = ''
+  complete.forEach((part, i) => {
+    if (i % 2 === 0) { text += part; return }
+    try {
+      const event = JSON.parse(part)
+      if (event && (event.type === 'tool_start' || event.type === 'tool_end')) events.push(event as StreamEvent)
+    } catch { /* 损坏的事件直接丢弃 */ }
+  })
+  return { text, events }
+}
 
 export type ChatMeta = {
   persistenceFailed?: boolean

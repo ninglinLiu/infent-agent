@@ -1,11 +1,13 @@
 import { getMaxOutputTokens } from './config'
 import { completion, readCompletionStream, type ModelMessage, type ProviderOptions } from './provider'
-import { executeTool, TOOL_DEFINITIONS, type ToolOptions, type ToolTrace } from './tools'
+import { executeTool, toolResultForModel, TOOL_DEFINITIONS, type ToolOptions, type ToolTrace } from './tools'
 
-export const AGENT_LIMITS = { rounds: 3, toolCalls: 6 } as const
+// 典型的一轮策略对话：查价/驱动分析 → 生成策略书 → 解释，校验失败时还要留一轮重试。
+export const AGENT_LIMITS = { rounds: 4, toolCalls: 8 } as const
 
 export async function runAgent(input: ModelMessage[], options: ProviderOptions & {
   onText: (text: string) => void
+  onToolStart?: (call: { id: string; name: string; arguments: Record<string, unknown> }) => void
   onTool?: (trace: ToolTrace) => void
   toolOptions?: ToolOptions
 }) {
@@ -29,14 +31,14 @@ export async function runAgent(input: ModelMessage[], options: ProviderOptions &
       options.signal.throwIfAborted()
       let args: unknown
       try { args = JSON.parse(call.function.arguments) } catch { args = null }
+      const argumentsObject = args && typeof args === 'object' && !Array.isArray(args) ? args as Record<string, unknown> : {}
+      options.onToolStart?.({ id: call.id, name: call.function.name, arguments: argumentsObject })
       const start = Date.now()
       const result = await executeTool(call.function.name, args, { ...options.toolOptions, signal: options.signal })
-      const trace: ToolTrace = { id: call.id, name: call.function.name,
-        arguments: args && typeof args === 'object' && !Array.isArray(args) ? args as Record<string, unknown> : {},
-        result, durationMs: Date.now() - start }
+      const trace: ToolTrace = { id: call.id, name: call.function.name, arguments: argumentsObject, result, durationMs: Date.now() - start }
       traces.push(trace)
       options.onTool?.(trace)
-      messages.push({ role: 'tool', tool_call_id: call.id, content: JSON.stringify(result) })
+      messages.push({ role: 'tool', tool_call_id: call.id, content: JSON.stringify(toolResultForModel(call.function.name, result)) })
     }
     if (turn.content) { answer += '\n\n'; options.onText('\n\n') }
   }
