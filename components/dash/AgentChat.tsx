@@ -15,7 +15,8 @@ import { accountFetch } from '@/lib/account/browser'
 import { RequireAccount } from '@/components/account/AccountAccess'
 import { useAccount } from '@/components/account/AccountProvider'
 import type { ChatMeta, StreamEvent } from '@/lib/ai/protocol'
-import { AsciiOrb } from './AsciiOrb'
+import { AsciiSharksBackdrop } from '@/components/agent/AsciiSharksBackdrop'
+import sharkStyles from '@/components/agent/AsciiSharksBackdrop.module.css'
 
 type ChatMessage =
   | { id: string; role: "user"; text: string }
@@ -250,17 +251,20 @@ function AccountChat(handlers: AgentChatHandlers) {
 
       <div className="account-history"><label htmlFor="chat-history">{lang === 'en' ? 'History' : '历史对话'}</label><select id="chat-history" value={conversationId ?? ''} disabled={busy || historyBusy} onChange={e => void selectConversation(e.target.value)}><option value="">{lang === 'en' ? 'New conversation' : '新对话'}</option>{conversations.map(item => <option key={item.id} value={item.id}>{item.title}</option>)}</select><button disabled={busy || historyBusy} onClick={() => void selectConversation('')}>{lang === 'en' ? 'New' : '新建'}</button></div>
       {historyError && <p role="status" className="account-sync">{historyError}<button onClick={() => { setHistoryError(''); void refreshHistory() }}>{lang === 'en' ? 'Retry' : '重试'}</button></p>}
-      <div ref={scrollRef} className="agent-chat-messages flex-1 overflow-y-auto thin-scroll px-3 py-3 space-y-3">
-        {fresh && <div className="agent-chat-welcome"><AsciiOrb /><p>{lang === 'en' ? 'ONE QUESTION · ONE STRATEGY · ONE CLICK' : '一个问题 · 一份策略书 · 一键模拟执行'}</p><h2>{lang === 'en' ? 'What are you curious about?' : '今天，你想了解什么？'}</h2><span className="agent-chat-welcome-sub">{lang === 'en' ? 'Describe your capital, risk and view. The agent researches with live data, drafts a strategy, backtests it on two years of real prices, and lets you deploy it to a paper sandbox.' : '说说你的资金、风险承受和看法。Agent 会用实时数据研究、写出策略书、用两年真实价格回测，再一键部署到模拟沙箱。'}</span></div>}
-        <AnimatePresence initial={false}>
-          {messages.map((m) =>
-            m.role === "user" ? (
-              <UserBubble key={m.id} text={m.text} />
-            ) : (
-              <AssistantBubble key={m.id} m={m} handlers={handlers} />
-            )
-          )}
-        </AnimatePresence>
+      <div className={sharkStyles.stage}>
+        <AsciiSharksBackdrop subdued={!fresh} />
+        <div ref={scrollRef} className={`agent-chat-messages flex-1 overflow-y-auto thin-scroll px-3 py-3 space-y-3 ${sharkStyles.messages}`}>
+          {fresh && <div className="agent-chat-welcome"><p>{lang === 'en' ? 'ONE QUESTION · ONE STRATEGY · ONE CLICK' : '一个问题 · 一份策略书 · 一键模拟执行'}</p><h2>{lang === 'en' ? 'What are you curious about?' : '今天，你想了解什么？'}</h2><span className="agent-chat-welcome-sub">{lang === 'en' ? 'Describe your capital, risk and view. The agent researches with live data, drafts a strategy, backtests it on two years of real prices, and lets you deploy it to a paper sandbox.' : '说说你的资金、风险承受和看法。Agent 会用实时数据研究、写出策略书、用两年真实价格回测，再一键部署到模拟沙箱。'}</span></div>}
+          <AnimatePresence initial={false}>
+            {messages.map((m) =>
+              m.role === "user" ? (
+                <UserBubble key={m.id} text={m.text} />
+              ) : (
+                <AssistantBubble key={m.id} m={m} handlers={handlers} />
+              )
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       <div className="agent-chat-prompts px-3 py-2 border-t border-[var(--line-1)] bg-[var(--bg-1)]">
