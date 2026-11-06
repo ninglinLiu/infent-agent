@@ -14,7 +14,7 @@ test('real MCP client discovers all tools with their own schemas and reads a pri
   await client.connect(b)
   try {
     const list = await client.listTools()
-    assert.deepEqual(list.tools.map(t => t.name).sort(), ['analyze_drivers', 'draft_strategy', 'get_onchain_stats', 'get_price'])
+    assert.deepEqual(list.tools.map(t => t.name).sort(), ['analyze_drivers', 'draft_strategy', 'get_market_overview', 'get_onchain_stats', 'get_price'])
     // 每个工具必须用自己的入参，不能共用同一个 schema
     const required = (name: string) => list.tools.find(t => t.name === name)!.inputSchema.required
     assert.deepEqual(required('get_onchain_stats'), ['address'])
@@ -34,6 +34,6 @@ test('stdio entrypoint starts outside the repo and supports MCP initialize/list'
   const transport = new StdioClientTransport({ command: process.execPath, args: [path.resolve('node_modules/tsx/dist/cli.mjs'), '--tsconfig', path.resolve('tsconfig.json'), path.resolve('scripts/mcp-server.ts')], cwd: path.parse(process.cwd()).root, stderr: 'pipe' })
   try {
     await client.connect(transport)
-    assert.equal((await client.listTools()).tools.length, 4)
+    assert.equal((await client.listTools()).tools.length, 5)
   } finally { await client.close(); await transport.close() }
 })

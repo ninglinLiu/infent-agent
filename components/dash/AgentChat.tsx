@@ -245,7 +245,7 @@ function AccountChat(handlers: AgentChatHandlers) {
           </div>
         </div>
         <span className="chip info">
-          <Sparkles className="h-2.5 w-2.5" /> DeepSeek · 4 tools
+          <Sparkles className="h-2.5 w-2.5" /> DeepSeek · 5 tools
         </span>
       </div>
 

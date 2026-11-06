@@ -9,6 +9,7 @@ export function ToolEvidence({ tools = [] }: { tools?: ToolTrace[] }) {
     {tools.map((tool, i) => <details key={`${tool.id}-${i}`} className="rounded-md border border-[var(--line-2)] bg-[var(--bg-1)] p-2 text-[11px]">
       <summary className="cursor-pointer break-words text-dim">
         {tool.result.ok ? '✓' : '!'} {({
+          get_market_overview: ['市场概览', 'Market overview'],
           get_price: ['行情查询', 'Price lookup'],
           get_onchain_stats: ['以太坊账户查询', 'Ethereum account'],
           analyze_drivers: ['驱动分析', 'Driver analysis'],

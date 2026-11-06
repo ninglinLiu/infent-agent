@@ -32,6 +32,10 @@ function summary(run: ToolRun, lang: 'zh' | 'en') {
   if (!r) return ''
   if (!r.ok) return `${r.code}`
   const data = r.data as Record<string, unknown>
+  if (run.name === 'get_market_overview') {
+    const count = Array.isArray(data.quotes) ? data.quotes.length : 0
+    return tr(`${count} 项行情快照 · ${r.source}`, `${count} market snapshots · ${r.source}`)
+  }
   if (run.name === 'get_price') return `${data.price} ${data.currency} · ${r.source}`
   if (run.name === 'analyze_drivers') {
     const report = data as unknown as DriverReport

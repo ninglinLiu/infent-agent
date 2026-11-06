@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { marketOverview, overviewInput } from './market-overview'
+import type { loadQuotes } from '../market/quotes'
 import { resolveInstrument } from '../market/presets'
 import { TRADABLE, UNIVERSE, findAsset } from '../market/universe'
 import { loadDaily } from '../market/history'
@@ -9,6 +11,11 @@ import { BENCHMARKS, normalizeSpec, specId, strategySpec } from '../quant/strate
 export const priceInput = z.object({ symbol: z.string().trim().min(1).max(24).regex(/^[A-Za-z0-9.^=-]+$/) }).strict()
 export const onchainInput = z.object({ address: z.string().regex(/^0x[0-9a-fA-F]{40}$/) }).strict()
 export const TOOL_DEFINITIONS = [
+  { type: 'function', function: {
+    name: 'get_market_overview',
+    description: 'Get the latest broad market snapshot from the same batch feed as the right-hand terminal: major indices, VIX, Treasury yield, dollar, gold and oil futures, plus regional equities. For questions like 今天的市场行情概况 / how are markets today, call this directly without asking for tickers. Default scope is global. Quote times differ by market; distinguish latest/last-session data from today, report missing quotes and never invent news causes.',
+    parameters: { type: 'object', properties: { scope: { type: 'string', enum: ['global', 'us', 'hk', 'cn', 'jp'] } }, additionalProperties: false },
+  } },
   { type: 'function', function: {
     name: 'get_price',
     description: 'Read an actual quote. Use BTC/ETH/SOL or Yahoo tickers such as AAPL, 600519.SS, 0700.HK. Include source, currency and quote time in your answer. Never guess a price if this fails.',
@@ -51,7 +58,7 @@ export type ToolResult =
   | { ok: true; source: string; observedAt: string; data: Record<string, unknown> }
   | { ok: false; code: 'INVALID_ARGUMENTS' | 'UNKNOWN_TOOL' | 'TIMEOUT' | 'UNAVAILABLE'; message: string }
 export type ToolTrace = { id: string; name: string; arguments: Record<string, unknown>; result: ToolResult; durationMs: number }
-export type ToolOptions = { fetcher?: typeof fetch; signal?: AbortSignal; timeoutMs?: number; rpcUrl?: string }
+export type ToolOptions = { fetcher?: typeof fetch; signal?: AbortSignal; timeoutMs?: number; rpcUrl?: string; quoteLoader?: typeof loadQuotes }
 
 const numberValue = z.number().finite()
 const quantity = z.string().regex(/^0x[0-9a-f]+$/i)
@@ -180,10 +187,16 @@ function abortable<T>(job: Promise<T>, signal: AbortSignal) {
 }
 
 export async function executeTool(name: string, input: unknown, options: ToolOptions = {}): Promise<ToolResult> {
-  if (!['get_price', 'get_onchain_stats', 'analyze_drivers', 'draft_strategy'].includes(name)) return { ok: false, code: 'UNKNOWN_TOOL', message: 'Tool is not available.' }
+  if (!TOOL_DEFINITIONS.some(tool => tool.function.name === name)) return { ok: false, code: 'UNKNOWN_TOOL', message: 'Tool is not available.' }
   const heavy = name === 'analyze_drivers' || name === 'draft_strategy'
   const timeout = AbortSignal.timeout(options.timeoutMs ?? (heavy ? 20_000 : 8000))
   const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout
+  if (name === 'get_market_overview') {
+    const checked = overviewInput.safeParse(input)
+    if (!checked.success) return { ok: false, code: 'INVALID_ARGUMENTS', message: 'Use optional scope: global, us, hk, cn or jp. Do not supply URLs or symbols.' }
+    try { return await abortable(marketOverview(checked.data, options.quoteLoader), signal) }
+    catch { return { ok: false, code: signal.aborted ? 'TIMEOUT' : 'UNAVAILABLE', message: 'Market overview data is unavailable right now. Do not substitute numbers or claim the tool does not exist.' } }
+  }
   if (name === 'draft_strategy') {
     try { return await abortable(draft(input), signal) }
     catch { return { ok: false, code: signal.aborted ? 'TIMEOUT' : 'UNAVAILABLE', message: 'Backtest data is unavailable right now. Do not invent performance numbers; tell the user the backtest could not run.' } }

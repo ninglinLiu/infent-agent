@@ -85,6 +85,7 @@ flowchart TD
 
 | 工具 | 数据源与实现边界 |
 |---|---|
+| `get_market_overview(scope?)` | 复用行情墙的 Yahoo Finance 批量数据，汇总全球或美股/港股/A股/日股范围的指数与宏观行情；保留各标的报价时间、休市状态和缺失项，不提供新闻归因。 |
 | `get_price(symbol)` | BTC / ETH / SOL 使用 Coinbase spot；股票、ETF 使用 Yahoo Finance。返回币种、来源与时间信息，报价可能延迟。 |
 | `get_onchain_stats(address)` | 校验 Ethereum mainnet，在同一区块哈希下读取原生 ETH 余额和 outgoing nonce；保留大整数精度，不推断代币持仓、收益或身份。 |
 | `analyze_drivers(symbol)` | 用近一年真实日收益计算 0–5 个交易日的领先-滞后相关，先对同日大盘收益做残差化，再按 Bonferroni 校正筛选；区分「独立驱动」与「只是跟着大盘动」。是相关，不是因果。 |
