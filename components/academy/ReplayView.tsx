@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Component, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react'
 import { maxDrawdown } from '@/lib/quant/stats'
 import { useHistoryFile } from '@/lib/academy/use-history'
+import { parseReplaySeries } from '@/lib/academy/history-validation'
 import { ACTION_LABEL, applyAction, checkpointIndexes, REPLAY_ACTIONS, REPLAY_CASES, replayResult, simulate, verdict, type ReplayAction, type ReplayCase, type Series } from '@/lib/academy/replay'
 import { useAcademy } from './AcademyProvider'
 import { useAcademyLocale } from './useAcademyLocale'
@@ -43,7 +44,9 @@ function Stage({ item, series, onExit }: { item: ReplayCase; series: Series; onE
     setMoving(true)
     const began = performance.now(), ms = Math.min(2200, 900 + (target - from) * 12)
     const step = (now: number) => {
-      const t = Math.min(1, (now - began) / ms)
+      // RAF timestamps describe the frame start and can precede performance.now()
+      // captured later in that same frame. Never reveal a negative price index.
+      const t = Math.max(0, Math.min(1, (now - began) / ms))
       setReveal(Math.round(from + (target - from) * (1 - (1 - t) ** 2)))
       if (t < 1) frame.current = requestAnimationFrame(step)
       else setMoving(false)
@@ -129,12 +132,21 @@ function Stage({ item, series, onExit }: { item: ReplayCase; series: Series; onE
   </div>
 }
 
+class ReplayBoundary extends Component<{ children: React.ReactNode; fallback: React.ReactNode }, { failed: boolean }> {
+  state = { failed: false }
+  static getDerivedStateFromError() { return { failed: true } }
+  render() { return this.state.failed ? this.props.fallback : this.props.children }
+}
+
 function Player({ item, onExit }: { item: ReplayCase; onExit: () => void }) {
   const { tr } = useAcademyLocale()
-  const { data: series, failed, retry } = useHistoryFile<Series>(item.id)
-  if (failed) return <div className="study-empty"><p>{tr('历史数据加载失败。', 'Could not load the history data.')}</p><button type="button" className="study-btn" onClick={retry}>{tr('重试', 'Retry')}</button></div>
-  if (!series) return <div className="study-empty" role="status">{tr('正在读取历史行情…', 'Loading market history…')}</div>
-  return <Stage item={item} series={series} onExit={onExit} />
+  const { data: series, failed, retry } = useHistoryFile<Series>(item.id, parseReplaySeries)
+  const [attempt, setAttempt] = useState(0)
+  const back = <button type="button" className="study-back" onClick={onExit}><ArrowLeft size={16} />{tr('全部案例', 'All cases')}</button>
+  const fallback = <div className="study-empty" role="status"><p>{tr('历史数据暂时无法读取，请重试或返回案例列表。', 'History is unavailable. Retry or return to the case list.')}</p><button type="button" className="study-btn" onClick={() => { retry(); setAttempt(value => value + 1) }}>{tr('重试', 'Retry')}</button>{back}</div>
+  if (failed) return fallback
+  if (!series) return <div className="study-empty" role="status">{tr('正在读取历史行情…', 'Loading market history…')}{back}</div>
+  return <ReplayBoundary key={attempt} fallback={fallback}><Stage item={item} series={series} onExit={onExit} /></ReplayBoundary>
 }
 
 export function ReplayView() {

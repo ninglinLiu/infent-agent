@@ -1,3 +1,5 @@
+import { replayProgress } from './account/schemas'
+
 export type MentorId = 'value' | 'quant'
 
 export const MENTORS = {
@@ -32,7 +34,15 @@ export const EMPTY_ACADEMY: AcademyState = { name: '', storyStep: 0, lessonStep:
 export function readAcademy(raw: string | null): AcademyState {
   try {
     const data = JSON.parse(raw || '{}')
+    const replays: Record<string, ReplayProgress> = {}
+    if (data.replays && typeof data.replays === 'object' && !Array.isArray(data.replays)) {
+      for (const [id, rawReplay] of Object.entries(data.replays)) {
+        if (!/^[a-z0-9-]{1,24}$/.test(id) || Object.keys(replays).length >= 12) continue
+        const parsed = replayProgress.safeParse(rawReplay)
+        if (parsed.success) replays[id] = parsed.data
+      }
+    }
     const step = (value: unknown, max: number) => typeof value === 'number' && Number.isInteger(value) ? Math.max(0, Math.min(value, max)) : 0
-    return { name: typeof data.name === 'string' ? data.name.trim().slice(0, 20) : '', storyStep: step(data.storyStep, STORY.length), lessonStep: step(data.lessonStep, LESSONS.length * 2), simulationStep: step(data.simulationStep, SIMULATION.length), reducedMotion: data.reducedMotion === true, presentation: data.presentation === 'classic' ? 'classic' : 'immersive' }
+    return { name: typeof data.name === 'string' ? data.name.trim().slice(0, 20) : '', storyStep: step(data.storyStep, STORY.length), lessonStep: step(data.lessonStep, LESSONS.length * 2), simulationStep: step(data.simulationStep, SIMULATION.length), reducedMotion: data.reducedMotion === true, presentation: data.presentation === 'classic' ? 'classic' : 'immersive', ...(Object.keys(replays).length ? { replays } : {}) }
   } catch { return { ...EMPTY_ACADEMY } }
 }

@@ -17,7 +17,11 @@ export function AcademyGate({ children, onExit }: { children: React.ReactNode; o
   useEffect(() => { if (state.name && state.storyStep < STORY.length) heading.current?.focus() }, [state.name, state.storyStep, STORY.length])
   if (!ready) return <div className="academy-loading" role="status">{tr("正在打开学习室…", "Opening the study room…")}</div>
   if (state.name && state.storyStep >= STORY.length) return <>{children}</>
-  const story = STORY[Math.min(state.storyStep, STORY.length - 1)]
+  // Keep persisted step IDs stable: step 1 (retired mentor intro) advances to 2.
+  const visibleSteps = [0, 2]
+  const currentStep = state.storyStep === 0 ? 0 : 2
+  const displayStep = visibleSteps.indexOf(currentStep)
+  const story = STORY[currentStep]
   const mentor = MENTORS[story.mentor]
   return <main className="academy-gate" data-reduced-motion={state.reducedMotion} data-stage={state.name && story.mentor === 'quant' ? 'hologram' : 'study'}>
     <header className="academy-gate-header">
@@ -27,16 +31,16 @@ export function AcademyGate({ children, onExit }: { children: React.ReactNode; o
     <div className="academy-gate-grid">
       <section className="academy-gate-art">
         <div className="academy-art-kicker"><span /> A LITTLE WISER, EVERY DAY</div>
-        <AcademyScene mentor={state.name ? story.mentor : 'value'} chapter={state.name ? state.storyStep + 1 : 0} />
+        <AcademyScene mentor={state.name ? story.mentor : 'value'} chapter={state.name ? displayStep + 1 : 0} />
         <div className="academy-art-caption"><span>THE INVESTOR’S STUDY</span><span>EST. 2026 ↗</span></div>
       </section>
       <section className="academy-gate-copy">
         {!state.name ? <div className="academy-enter">
           <div className="academy-eyebrow"><Sparkles size={14} />{tr("你的投资故事，从这里开始", "Your investing story starts here")}</div>
           <h1>{tr("学会思考，", "Learn to think.")}<br />{tr("再开始", "Then start ")}<span>{tr("投资。", "investing.")}</span></h1>
-          {state.presentation === 'immersive' && <div className="academy-title-sticker">MEET YOUR MENTORS ↗</div>}
-          <p className="academy-intro">{tr("走进一间书房，遇见两位导师。", "Step into a study and meet your mentors.")}<br />{tr("从第一个问题，到第一次模拟实践。", "From your first question to your first simulated trade.")}</p>
-          <div className="academy-mentor-chips"><span><span className="academy-avatar gold">WB</span>{tr("巴菲特 · 价值投资", "Warren Buffett · Value investing")}</span><span><span className="academy-avatar mint">LC</span>{tr("林澈 · 量化研究", "Lin Che · Quant research")}</span></div>
+          {state.presentation === 'immersive' && <div className="academy-title-sticker">MEET YOUR MENTOR ↗</div>}
+          <p className="academy-intro">{tr("走进一间书房，学习价值投资。", "Step into a study and explore value investing.")}<br />{tr("从第一个问题，到第一次模拟实践。", "From your first question to your first simulated trade.")}</p>
+          <div className="academy-mentor-chips"><span><span className="academy-avatar gold">WB</span>{tr("巴菲特 · 价值投资", "Warren Buffett · Value investing")}</span></div>
           <form className="academy-login" onSubmit={e => { e.preventDefault(); update({ name: name.trim() || '新晋研究员' }) }}>
             <label htmlFor="researcher-name">{tr("怎么称呼你？", "What should we call you?")}<span>{tr("选填", "Optional")}</span></label>
             <input id="researcher-name" autoComplete="nickname" maxLength={20} placeholder={tr("你的研究员昵称", "Your researcher nickname")} value={name} onChange={e => setName(e.target.value)} />
@@ -45,16 +49,16 @@ export function AcademyGate({ children, onExit }: { children: React.ReactNode; o
           </form>
           <div className="academy-entry-foot"><BookOpen size={16} /><span>{tr("一段故事 · 三节短课 · 一次模拟实践", "One story · Three short lessons · One practice case")}</span></div>
         </div> : <div className="academy-story-copy academy-enter" key={state.storyStep}>
-          <div className="academy-story-progress" aria-label={`${tr("序章", "Prologue")} ${state.storyStep + 1} / ${STORY.length}`}>{STORY.map((_, i) => <span key={i} className={i <= state.storyStep ? 'active' : ''} />)}<small>0{state.storyStep + 1} / 03</small></div>
+          <div className="academy-story-progress" aria-label={`${tr("序章", "Prologue")} ${displayStep + 1} / ${visibleSteps.length}`}>{visibleSteps.map((_, i) => <span key={i} className={i <= displayStep ? 'active' : ''} />)}<small>0{displayStep + 1} / 02</small></div>
           <div className="academy-eyebrow">{story.eyebrow}</div>
           <h1 ref={heading} tabIndex={-1}>{story.title.split('\n').map((line, i) => <span className="academy-title-line" key={i}>{line}</span>)}</h1>
           <div className="academy-speaker"><span className={`academy-avatar ${story.mentor === 'value' ? 'gold' : 'mint'}`}>{mentor.initials}</span><div><strong>{mentor.name}</strong><small>{mentor.role}</small></div><span className="academy-speaking-bars"><i /><i /><i /></span></div>
           <p className="academy-dialogue">{story.text}</p>
-          <button className="academy-primary" onClick={() => update({ storyStep: state.storyStep + 1 })}>{story.action}<ArrowRight size={18} /></button>
+          <button className="academy-primary" onClick={() => update({ storyStep: currentStep === 0 ? 2 : STORY.length })}>{story.action}<ArrowRight size={18} /></button>
           <p className="academy-caption"><Check size={13} />{tr("单线故事，按自己的节奏继续", "One story. Continue at your own pace.")}</p>
         </div>}
         {!storageAvailable && <p className="academy-storage-notice" role="status">{tr("云端保存失败，请点击同步提示中的重试。", "Cloud save failed. Use Retry in the sync notice.")}</p>}
-        <p className="academy-persona-note">{tr("角色对白为虚构教学内容。巴菲特角色取材于其公开投资理念，并非本人对话或背书；林澈为原创角色。", "Dialogue is fictional and educational. The Buffett character draws on his public investing ideas, not personal dialogue or endorsement. Lin Che is an original character.")}</p>
+        <p className="academy-persona-note">{tr("角色对白为虚构教学内容。巴菲特角色取材于其公开投资理念，并非本人对话或背书。", "Dialogue is fictional and educational. The Buffett character draws on his public investing ideas, not personal dialogue or endorsement.")}</p>
       </section>
     </div>
   </main>

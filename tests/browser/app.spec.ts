@@ -106,7 +106,7 @@ test('learning room keeps lessons and mentors without duplicating the financial 
   const room = page.locator('.academy-room')
   await expect(room).toBeVisible()
   await page.getByRole('button', { name: '以研究员身份进入' }).click()
-  for (const name of ['接过研究员手册', '了解今天的任务', '进入学习室']) {
+  for (const name of ['接过研究员手册', '进入学习室']) {
     await page.getByRole('button', { name, exact: true }).click()
   }
   await expect(room.locator('[data-academy-view="workspace"]')).toBeVisible()
