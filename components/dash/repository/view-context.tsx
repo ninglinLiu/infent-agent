@@ -11,6 +11,7 @@ export type ViewId =
   | "risk"
   | "journal"
   | "settings"
+  | "portfolio"
 
 type ViewCtx = {
   view: ViewId

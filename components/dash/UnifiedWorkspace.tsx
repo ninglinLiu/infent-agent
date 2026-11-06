@@ -7,13 +7,15 @@ import { ArrowUpRight, BookOpen, CandlestickChart, Home, Info, Languages, Sparkl
 import { useLang } from '@/lib/i18n'
 import { useDash } from '@/lib/dash-store'
 import type { NightDestination } from '@/components/academy/night-navigation'
-import { AgentChat } from './AgentChat'
-import { QuantPreview } from './QuantPreview'
+import { AgentWorkspace } from '@/components/agent/AgentWorkspace'
 import { ToastLayer } from './ToastLayer'
 import { AccountLink, RequireAccount } from '@/components/account/AccountAccess'
+import type { ExchangeFocus } from './repository/RepositoryConsole'
 
-const RepositoryConsole = dynamic(() => import('./repository/RepositoryConsole').then(module => module.RepositoryConsole))
-const AcademyConsole = dynamic(() => import('@/components/academy/AcademyConsole').then(module => module.AcademyConsole))
+// loading 让每个分块有自己的 Suspense 边界，首次加载时不会把整个工作区一起挂起
+const panelLoading = () => <div className="account-notice" role="status">Loading…</div>
+const RepositoryConsole = dynamic(() => import('./repository/RepositoryConsole').then(module => module.RepositoryConsole), { loading: panelLoading })
+const AcademyConsole = dynamic(() => import('@/components/academy/AcademyConsole').then(module => module.AcademyConsole), { loading: panelLoading })
 
 type Section = 'ai' | 'exchange' | 'study' | 'about'
 export type WorkspaceEntry = { destination: NightDestination | 'about'; sequence: number }
@@ -30,11 +32,16 @@ export function UnifiedWorkspace({ entry, onExit, visible }: { entry: WorkspaceE
   const tr = (zh: string, en: string) => lang === 'en' ? en : zh
   const [section, setSection] = useState<Section>(() => sectionFor(entry.destination))
   const [visited, setVisited] = useState<Partial<Record<Section, boolean>>>(() => ({ [sectionFor(entry.destination)]: true }))
+  const [exchangeFocus, setExchangeFocus] = useState<ExchangeFocus | undefined>()
   const heading = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => { setTheme('light') }, [setTheme])
 
+  // 只响应新的入口：挂起恢复时 effect 可能重跑，不能把用户已切换的页签重置回去
+  const handledEntry = useRef(entry.sequence)
   useEffect(() => {
+    if (handledEntry.current === entry.sequence) return
+    handledEntry.current = entry.sequence
     const next = sectionFor(entry.destination)
     setSection(next)
     setVisited(previous => ({ ...previous, [next]: true }))
@@ -72,17 +79,16 @@ export function UnifiedWorkspace({ entry, onExit, visible }: { entry: WorkspaceE
       </header>
       <div className="unified-content">
         {visited.ai && <section className="unified-panel unified-ai" hidden={section !== 'ai'} aria-label={tr('AI 对话', 'AI conversation')}>
-          <div className="unified-chat"><RequireAccount><AgentChat /></RequireAccount></div>
-          <QuantPreview active={visible && section === 'ai'} onOpen={() => navigate('exchange')} />
+          <AgentWorkspace onOpenExchange={symbol => { setExchangeFocus(previous => ({ view: symbol ? 'markets' : 'portfolio', symbol, sequence: (previous?.sequence ?? 0) + 1 })); navigate('exchange') }} />
         </section>}
         {visited.exchange && <section className="unified-panel" hidden={section !== 'exchange'} aria-label={tr('交易所内容', 'Exchange content')}>
-          <RepositoryConsole embedded initialView="markets" onExit={onExit} />
+          <RepositoryConsole embedded initialView="markets" onExit={onExit} focus={exchangeFocus} />
         </section>}
         {visited.study && <section className="unified-panel" hidden={section !== 'study'} aria-label={tr('学习室', 'Study Room')}>
           <RequireAccount><AcademyConsole embedded initialView={entry.destination === 'practice' ? 'simulation' : entry.destination === 'lessons' ? 'learning' : 'workspace'} onExit={onExit} /></RequireAccount>
         </section>}
         {visited.about && <section className="unified-panel unified-about" hidden={section !== 'about'} aria-label={tr('关于 omniAI', 'About omniAI')}>
-          <div className="unified-about-copy"><span className="unified-eyebrow">THE CURIOUS CORNER</span><h2>{tr('让好奇心，', 'Follow your curiosity.')}<br /><em>{tr('变成理解。', 'Build your understanding.')}</em></h2><p>{tr('从一个问题开始。和 AI 一起研究，在交易所观察市场，再到学习室建立自己的判断。三个空间，一段连续的体验。', 'Start with a question. Research with AI, explore the market in Exchange, and build your judgment in the Study Room. Three spaces, one connected experience.')}</p><div className="unified-about-actions"><Link href="/about">{tr('完整产品介绍', 'Explore the product story')}<ArrowUpRight size={18} /></Link><a href="https://github.com/ninglinLiu/infent-agent" target="_blank" rel="noreferrer">GitHub<ArrowUpRight size={18} /></a></div></div>
+          <div className="unified-about-copy"><span className="unified-eyebrow">THE CURIOUS CORNER</span><h2>{tr('让好奇心，', 'Follow your curiosity.')}<br /><em>{tr('变成理解。', 'Build your understanding.')}</em></h2><p>{tr('从一个问题开始。和 AI 一起研究，在交易所观察市场，再到学习室建立自己的判断。三个空间，一段连续的体验。', 'Start with a question. Research with AI, explore the market in Exchange, and build your judgment in the Study Room. Three spaces, one connected experience.')}</p><div className="unified-about-actions"><Link href="/">{tr('完整产品介绍', 'Explore the product story')}<ArrowUpRight size={18} /></Link><a href="https://github.com/ninglinLiu/infent-agent" target="_blank" rel="noreferrer">GitHub<ArrowUpRight size={18} /></a></div></div>
           <div className="unified-about-grid">{items.slice(0, 3).map(({ id, icon: Icon, label, subtitle }, i) => <button type="button" key={id} onClick={() => navigate(id)}><span>0{i + 1}</span><Icon size={30} strokeWidth={1.3} /><h3>{label}</h3><p>{subtitle}</p><ArrowUpRight size={19} /></button>)}</div>
         </section>}
       </div>

@@ -1,0 +1,63 @@
+.stage {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding-top: 40px;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  user-select: none;
+  opacity: .95;
+  transition: opacity .6s ease;
+  mask-image: linear-gradient(transparent, #000 10%, #000 88%, transparent);
+}
+
+.backdrop[data-subdued='true'] { opacity: .36; }
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.messages { min-width: 0; width: 100%; }
+
+.messages :global(.agent-chat-welcome) {
+  position: relative;
+  padding: 26px 12px;
+  border-radius: 30px;
+  background: radial-gradient(ellipse, #ffffffed 15%, #ffffffc4 55%, #ffffff00 75%);
+}
+
+.toggle {
+  position: absolute;
+  z-index: 2;
+  top: 10px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  color: #80659f;
+  background: #fffffff0;
+  border: 1px solid #e9e0f3;
+  border-radius: 8px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.toggle:hover { background: #f4eefc; }
+.toggle:focus-visible { outline: 2px solid #8760c8; outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop { transition: none; }
+  .toggle { display: none; }
+}

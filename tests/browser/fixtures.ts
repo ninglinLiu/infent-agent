@@ -21,6 +21,8 @@ export const test = base.extend({
     await page.route('**/api/conversations', route => route.fulfill({ json: { conversations: [] } }))
     await page.route('**/api/profile', route => route.fulfill({ json: { profile: { display_name: '' }, email: user.email } }))
     await page.route('**/api/learning', route => route.fulfill({ json: { courses: [], attempts: [], entitlements: [] } }))
+    // 沙箱账本走本地模式，UI 测试不触达任何真实数据库
+    await page.route('**/api/sandbox', route => route.fulfill({ json: { mode: 'local' } }))
     await use(page)
   },
 })

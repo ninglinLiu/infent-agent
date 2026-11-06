@@ -6,7 +6,6 @@ import {
   ColorType,
   CrosshairMode,
   HistogramSeries,
-  LineSeries,
   LineStyle,
   createChart,
   createSeriesMarkers,
@@ -17,17 +16,22 @@ import type {
   IChartApi,
   ISeriesApi,
   ISeriesMarkersPluginApi,
-  LineData,
   MouseEventParams,
   Time,
 } from "lightweight-charts"
-import { ArrowDown, ArrowUp, Loader2, Maximize2, Minimize2, Search, Sparkles } from "lucide-react"
+import { ArrowDown, ArrowUp, Loader2, Maximize2, Minimize2, Search } from "lucide-react"
 import { useDash } from "@/lib/dash-store"
 import { useLang, useT } from "@/lib/i18n"
 import { PRESET_LIST, displayName, filterPresets, tradingViewUrl } from "@/lib/market/presets"
 import type { ChartInterval, Instrument, KlinePayload } from "@/lib/market/types"
 import { INTERVALS } from "@/lib/market/types"
-import { VIEW_BARS, buildForecast, markIndex, visibleFrom } from "@/lib/market/overlay"
+import { visibleFrom } from "@/lib/market/overlay"
+import { useLiveMarket } from "@/lib/market/live"
+import { findAsset } from "@/lib/market/universe"
+import { useSandbox } from "@/lib/sandbox/client"
+import type { SandboxOrderRow } from "@/lib/sandbox/types"
+import { useAccount } from "@/components/account/AccountProvider"
+import { FlashNumber } from "@/components/terminal/primitives"
 
 type HoverBar = {
   time: Time
@@ -42,10 +46,26 @@ type ChartApi = {
   chart: IChartApi
   candles: ISeriesApi<"Candlestick">
   volume: ISeriesApi<"Histogram">
-  forecast: ISeriesApi<"Line">
-  bandUpper: ISeriesApi<"Line">
-  bandLower: ISeriesApi<"Line">
   markers: ISeriesMarkersPluginApi<Time>
+}
+
+const INTERVAL_SECONDS: Record<ChartInterval, number> = { "1": 60, "5": 300, "15": 900, "60": 3600, "240": 14400, D: 86400 }
+
+function localDate(ms: number, tz: string) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(ms))
+}
+
+/** 某个时刻落在哪根 K 线上：日线按交易所当地日期，分钟线取不晚于该时刻的最后一根 */
+function barTimeAt(bars: KlinePayload["candles"], ms: number, tz: string): Time | null {
+  if (!bars.length) return null
+  if (typeof bars[0].time === "string") {
+    const day = localDate(ms, tz)
+    const hit = [...bars].reverse().find(b => String(b.time) <= day)
+    return (hit?.time ?? null) as Time | null
+  }
+  const seconds = ms / 1000
+  const hit = [...bars].reverse().find(b => Number(b.time) <= seconds)
+  return (hit?.time ?? null) as Time | null
 }
 
 function fmtPrice(n: number, precision: number) {
@@ -78,7 +98,7 @@ function fmtTime(time: Time, lang: "zh" | "en") {
   }).format(new Date(time * 1000))
 }
 
-function paintChart(api: ChartApi, payload: KlinePayload, interval: ChartInterval) {
+function paintChart(api: ChartApi, payload: KlinePayload) {
   const candleData: CandlestickData<Time>[] = payload.candles.map((c) => ({
     time: c.time as Time,
     open: c.open,
@@ -94,57 +114,29 @@ function paintChart(api: ChartApi, payload: KlinePayload, interval: ChartInterva
   api.candles.setData(candleData)
   api.volume.setData(volumeData)
 
-  const last = payload.candles[payload.candles.length - 1]
-  if (last) {
-    const band = buildForecast(last, interval)
-    const start: LineData<Time> = { time: last.time as Time, value: last.close }
-    api.forecast.setData([start, ...band.map((b) => ({ time: b.time as Time, value: b.mid }))])
-    api.bandUpper.setData([start, ...band.map((b) => ({ time: b.time as Time, value: b.upper }))])
-    api.bandLower.setData([start, ...band.map((b) => ({ time: b.time as Time, value: b.lower }))])
-  } else {
-    api.forecast.setData([])
-    api.bandUpper.setData([])
-    api.bandLower.setData([])
-  }
-
   const range = visibleFrom(payload.candles.length)
   api.chart.timeScale().setVisibleLogicalRange(range)
 }
 
-function paintMarks(
-  api: ChartApi,
-  payload: KlinePayload,
-  marks: { kind: "buy" | "sell"; symbol: string; label: string; idxRatio: number }[],
-  currentSymbol: string
-) {
-  const bars = payload.candles
-  if (!bars.length) {
-    api.markers.setMarkers([])
-    return
-  }
-  const window = Math.min(VIEW_BARS, bars.length)
-  const offset = bars.length - window
-  api.markers.setMarkers(
-    marks.map((m) => {
-      const idx = markIndex(m.idxRatio, window, offset)
-      const bar = bars[idx] ?? bars[bars.length - 1]
-      const current = m.symbol.toUpperCase() === currentSymbol.toUpperCase()
-      return {
-        time: bar.time as Time,
-        position: m.kind === "buy" ? "belowBar" : "aboveBar",
-        color: m.kind === "buy" ? "#428c88" : "#bb708a",
-        shape: m.kind === "buy" ? "arrowUp" : "arrowDown",
-        text: m.label,
-        size: current ? 2 : 1,
-      }
-    })
-  )
+/** 沙箱里的真实成交：按成交时刻落到对应 K 线上 */
+function paintFills(api: ChartApi, payload: KlinePayload, fills: SandboxOrderRow[], tz: string) {
+  const markers = fills.flatMap(fill => {
+    const time = barTimeAt(payload.candles, Date.parse(fill.created_at), tz)
+    if (time === null) return []
+    return [{
+      time,
+      position: fill.side === "buy" ? "belowBar" as const : "aboveBar" as const,
+      color: fill.side === "buy" ? "#4fd1b5" : "#f07a9b",
+      shape: fill.side === "buy" ? "arrowUp" as const : "arrowDown" as const,
+      text: `${fill.side === "buy" ? "BUY" : "SELL"} ${fill.qty} @ ${fill.fill_price.toFixed(2)}`,
+      size: 1.4,
+    }]
+  }).sort((a, b) => String(a.time).localeCompare(String(b.time), undefined, { numeric: true }))
+  api.markers.setMarkers(markers)
 }
 
 export function KLineChart() {
   const {
-    marks,
-    metrics,
     theme,
     chartInstrument,
     chartInterval,
@@ -153,6 +145,13 @@ export function KLineChart() {
   } = useDash()
   const { lang } = useLang()
   const t = useT()
+  const live = useLiveMarket()
+  const { user } = useAccount()
+  const { portfolio } = useSandbox(user?.id)
+  // 图表品种若在行情白名单里，最后一根 K 线跟随实时报价跳动
+  const asset = findAsset(chartInstrument.symbol) ?? (chartInstrument.yahoo ? findAsset(chartInstrument.yahoo) : undefined)
+  const liveQuote = asset ? live.quotes[asset.symbol] : undefined
+  const fills = useMemo(() => (portfolio?.orders ?? []).filter(o => asset && o.symbol === asset.symbol), [portfolio?.orders, asset])
 
   const [query, setQuery] = useState(chartInstrument.symbol)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -280,12 +279,15 @@ export function KLineChart() {
         localization: { locale: lang === "zh" ? "zh-CN" : "en-US" },
       })
 
+      // 深色终端里用更亮的涨跌色，浅色页面沿用原来的青绿/灰玫红
+      const up = tone("--chart-up") || "#428c88"
+      const down = tone("--chart-down") || "#bb708a"
       const candles = chart.addSeries(CandlestickSeries, {
-        upColor: "#428c88",
-        downColor: "#bb708a",
+        upColor: up,
+        downColor: down,
         borderVisible: false,
-        wickUpColor: "#428c88",
-        wickDownColor: "#bb708a",
+        wickUpColor: up,
+        wickDownColor: down,
       })
       const volume = chart.addSeries(HistogramSeries, {
         priceFormat: { type: "volume" },
@@ -294,30 +296,6 @@ export function KLineChart() {
       chart.priceScale("vol").applyOptions({
         scaleMargins: { top: 0.8, bottom: 0 },
         visible: false,
-      })
-      const forecast = chart.addSeries(LineSeries, {
-        color: "#956bd0",
-        lineWidth: 2,
-        lineStyle: LineStyle.Dashed,
-        lastValueVisible: false,
-        priceLineVisible: false,
-        crosshairMarkerVisible: false,
-      })
-      const bandUpper = chart.addSeries(LineSeries, {
-        color: "rgba(149,107,208,0.4)",
-        lineWidth: 1,
-        lineStyle: LineStyle.Dotted,
-        lastValueVisible: false,
-        priceLineVisible: false,
-        crosshairMarkerVisible: false,
-      })
-      const bandLower = chart.addSeries(LineSeries, {
-        color: "rgba(149,107,208,0.4)",
-        lineWidth: 1,
-        lineStyle: LineStyle.Dotted,
-        lastValueVisible: false,
-        priceLineVisible: false,
-        crosshairMarkerVisible: false,
       })
       const markers = createSeriesMarkers(candles, [])
 
@@ -342,7 +320,7 @@ export function KLineChart() {
         })
       }
       chart.subscribeCrosshairMove(onMove)
-      chartRef.current = { chart, candles, volume, forecast, bandUpper, bandLower, markers }
+      chartRef.current = { chart, candles, volume, markers }
       setChartTick((n) => n + 1)
 
       return () => {
@@ -375,12 +353,47 @@ export function KLineChart() {
     }
   }, [dark, lang, chartInterval])
 
+  const tz = chartInstrument.timeZone || asset?.tz || "America/New_York"
   useEffect(() => {
     const api = chartRef.current
     if (!api || !payload || payload.interval !== chartInterval) return
-    paintChart(api, payload, chartInterval)
-    paintMarks(api, payload, marks, chartInstrument.symbol)
-  }, [payload, chartInterval, chartTick, marks, chartInstrument.symbol])
+    paintChart(api, payload)
+  }, [payload, chartInterval, chartTick])
+
+  useEffect(() => {
+    const api = chartRef.current
+    if (!api || !payload || payload.interval !== chartInterval) return
+    paintFills(api, payload, fills, tz)
+  }, [payload, chartInterval, chartTick, fills, tz])
+
+  // 实时报价落到当前这根 K 线：同一根则更新收盘/高低，进入新的时间桶则新开一根
+  const lastBar = useRef<{ time: Time; open: number; high: number; low: number; close: number } | null>(null)
+  useEffect(() => {
+    const last = payload?.candles[payload.candles.length - 1]
+    lastBar.current = last ? { time: last.time as Time, open: last.open, high: last.high, low: last.low, close: last.close } : null
+  }, [payload])
+  useEffect(() => {
+    const api = chartRef.current
+    const bar = lastBar.current
+    if (!api || !payload || !bar || !liveQuote || payload.interval !== chartInterval) return
+    const at = Date.parse(liveQuote.quotedAt)
+    const price = liveQuote.price
+    let time: Time
+    if (typeof bar.time === "string") {
+      const day = localDate(at, tz)
+      if (day < bar.time) return
+      time = day as Time
+    } else {
+      const step = INTERVAL_SECONDS[chartInterval]
+      const bucket = Math.floor(at / 1000 / step) * step
+      if (bucket < Number(bar.time)) return
+      time = (bucket > Number(bar.time) + step * 3 ? Number(bar.time) : bucket) as Time
+    }
+    const next = time === bar.time
+      ? { ...bar, close: price, high: Math.max(bar.high, price), low: Math.min(bar.low, price) }
+      : { time, open: bar.close, high: Math.max(bar.close, price), low: Math.min(bar.close, price), close: price }
+    try { api.candles.update(next); lastBar.current = next } catch { /* 数据源时间轴与报价不一致时忽略 */ }
+  }, [liveQuote, payload, chartInterval, tz])
 
   const pick = useCallback(
     (inst: Instrument) => {
@@ -391,14 +404,17 @@ export function KLineChart() {
     [setChartInstrument]
   )
 
-  const live =
+  const current =
     payload &&
     (payload.instrument.symbol.toUpperCase() === chartInstrument.symbol.toUpperCase() ||
       (!!chartInstrument.yahoo && payload.instrument.yahoo === chartInstrument.yahoo))
       ? payload
       : null
-  const quote = live?.quote
-  const precision = live?.precision ?? 2
+  // 头部价格优先用 5 秒刷新的实时报价，K 线接口的报价作为后备
+  const quote = useMemo(() => current && liveQuote
+    ? { ...current.quote, price: liveQuote.price, previous: liveQuote.previousClose ?? current.quote.previous, change: liveQuote.previousClose ? liveQuote.price - liveQuote.previousClose : current.quote.change, changePct: liveQuote.changePct ?? current.quote.changePct }
+    : current?.quote, [current, liveQuote])
+  const precision = current?.precision ?? 2
   const shown = useMemo(() => hover ?? (quote
     ? {
         time: (payload?.candles.at(-1)?.time ?? "") as Time,
@@ -488,14 +504,15 @@ export function KLineChart() {
                 <span className="text-[11px] text-dim truncate">
                   {displayName(chartInstrument, lang)} · {chartInstrument.market || "—"}
                 </span>
-                <span className="chip info shrink-0">
-                  <Sparkles className="h-2.5 w-2.5" /> {t("kline.live")}
+                <span className={`chip shrink-0 ${liveQuote ? "up" : "info"}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${liveQuote?.open ? "bg-up animate-pulse" : "bg-[var(--fg-3)]"}`} />
+                  {liveQuote ? (liveQuote.open ? (lang === "en" ? "LIVE · 5s" : "实时 · 5 秒") : (lang === "en" ? "CLOSED · last" : "休市 · 最后价")) : t("kline.live")}
                 </span>
               </div>
               <div className="flex items-baseline gap-2 mt-0.5">
-                <span className="tabular text-2xl font-display font-semibold">
+                <FlashNumber value={quote?.price} flash={asset ? live.flashes[asset.symbol] : undefined} className="tabular text-2xl font-display font-semibold">
                   {quote ? fmtPrice(quote.price, precision) : "—"}
-                </span>
+                </FlashNumber>
                 {quote && (
                   <span className={`tabular text-sm font-mono-ui ${up ? "text-up" : "text-down"}`}>
                     {up ? "+" : ""}
@@ -592,21 +609,17 @@ export function KLineChart() {
                 <span className="tabular text-[var(--fg-0)]">{fmtVol(ohlc.v)}</span>
               </div>
             )}
-            <div className="flex justify-between gap-4 text-dim">
-              <span>{t("kline.ai.win")}</span>
-              <span className="tabular text-info">{Math.round(metrics.winRate * 100)}%</span>
-            </div>
           </div>
         )}
       </div>
 
-      {marks.length > 0 && (
+      {fills.length > 0 && (
         <div className="relative z-10 shrink-0 px-4 py-1.5 border-t border-[var(--line-1)] flex items-center gap-2 overflow-x-auto thin-scroll">
-          <span className="text-[10px] text-ghost uppercase tracking-wider shrink-0">{t("kline.exec.title")}</span>
-          {marks.map((m) => (
-            <span key={m.id} className={`chip shrink-0 ${m.kind === "buy" ? "up" : "down"}`}>
-              {m.kind === "buy" ? <ArrowUp className="h-2.5 w-2.5" /> : <ArrowDown className="h-2.5 w-2.5" />}
-              {m.label}
+          <span className="text-[10px] text-ghost uppercase tracking-wider shrink-0">{lang === "en" ? "Sandbox fills" : "沙箱成交"}</span>
+          {fills.slice(0, 8).map((fill) => (
+            <span key={fill.id} className={`chip shrink-0 ${fill.side === "buy" ? "up" : "down"}`}>
+              {fill.side === "buy" ? <ArrowUp className="h-2.5 w-2.5" /> : <ArrowDown className="h-2.5 w-2.5" />}
+              {fill.qty} @ {fmtPrice(fill.fill_price, precision)}
             </span>
           ))}
         </div>
@@ -616,9 +629,6 @@ export function KLineChart() {
         <div className="flex gap-4">
           <span className="inline-flex items-center gap-1 text-dim">
             <span className="inline-block w-3 h-1.5 bg-up rounded-sm" /> {t("kline.legend.history")}
-          </span>
-          <span className="inline-flex items-center gap-1 text-dim">
-            <span className="inline-block w-3 h-1.5 rounded-sm" style={{ background: "#956bd0" }} /> {t("kline.legend.forecast")}
           </span>
           <span className="inline-flex items-center gap-1 text-dim">
             <ArrowUp className="h-2.5 w-2.5 text-up" /> {t("kline.legend.buy")}

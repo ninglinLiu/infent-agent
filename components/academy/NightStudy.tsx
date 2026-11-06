@@ -55,6 +55,15 @@ export function NightStudy() {
   }, [])
 
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current) }, [])
+  // 宣传页按钮带 ?enter= 进来时，直接打开对应空间，不再先停在街角
+  useEffect(() => {
+    const target = new URLSearchParams(location.search).get('enter')
+    const allowed: Record<string, NightDestination> = { workspace: 'workspace', markets: 'markets', academy: 'academy' }
+    if (!target || !allowed[target]) return
+    setEntry(previous => ({ destination: allowed[target], sequence: (previous?.sequence ?? 0) + 1 }))
+    setOpen(true)
+    history.replaceState(null, '', location.pathname)
+  }, [])
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
     const sync = () => setStill(media.matches)

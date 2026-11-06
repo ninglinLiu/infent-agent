@@ -1,3 +1,5 @@
+import { replayProgress } from './account/schemas'
+
 export type MentorId = 'value' | 'quant'
 
 export const MENTORS = {
@@ -8,7 +10,7 @@ export const MENTORS = {
 export const STORY = [
   { mentor: 'value', eyebrow: '序章 · 一封邀请', title: '先认识一家企业，\n再认识它的价格。', text: '欢迎来到 omniAI 学习室。今天，你是一名新入职的研究员。我们先不急着交易，一起研究一家以可口可乐为主题的简化教学案例。', action: '接过研究员手册' },
   { mentor: 'quant', eyebrow: '序章 · 认识搭档', title: '好的直觉，\n也需要证据。', text: '我是林澈，你的量化搭档。价值投资提出问题，我来帮你验证。我们会先学三个小知识，再用模拟资金完成一次练习。', action: '了解今天的任务' },
-  { mentor: 'value', eyebrow: '序章 · 第一天', title: '你的第一份任务：\n可口可乐研究案。', text: '看懂企业、理解风险、写下规则。然后亲手下一个模拟订单，观察结果。每次只向前一步，我们一起完成。', action: '进入学习室' },
+  { mentor: 'value', eyebrow: '序章 · 第一天', title: '你的第一份任务：\n走一遍真实历史。', text: '先用真实行情算清回撤和仓位，再回到 2008、2020 那些时刻，亲手做决定，看看结果。每次只向前一步，我们一起完成。', action: '进入学习室' },
 ] satisfies Array<{ mentor: MentorId; eyebrow: string; title: string; text: string; action: string }>
 
 export const LESSONS = [
@@ -25,13 +27,22 @@ export const SIMULATION = [
 ] satisfies Array<{ mentor: MentorId; title: string; text: string; action: string }>
 
 export const ACADEMY_STORAGE_KEY = 'infent-academy-v1'
-export type AcademyState = { name: string; storyStep: number; lessonStep: number; simulationStep: number; reducedMotion: boolean; presentation: 'immersive' | 'classic' }
+export type ReplayProgress = { final: number; hold: number; decisions: Array<'add' | 'hold' | 'trim' | 'exit'>; at: string }
+export type AcademyState = { name: string; storyStep: number; lessonStep: number; simulationStep: number; reducedMotion: boolean; presentation: 'immersive' | 'classic'; replays?: Record<string, ReplayProgress> }
 export const EMPTY_ACADEMY: AcademyState = { name: '', storyStep: 0, lessonStep: 0, simulationStep: 0, reducedMotion: false, presentation: 'immersive' }
 
 export function readAcademy(raw: string | null): AcademyState {
   try {
     const data = JSON.parse(raw || '{}')
+    const replays: Record<string, ReplayProgress> = {}
+    if (data.replays && typeof data.replays === 'object' && !Array.isArray(data.replays)) {
+      for (const [id, rawReplay] of Object.entries(data.replays)) {
+        if (!/^[a-z0-9-]{1,24}$/.test(id) || Object.keys(replays).length >= 12) continue
+        const parsed = replayProgress.safeParse(rawReplay)
+        if (parsed.success) replays[id] = parsed.data
+      }
+    }
     const step = (value: unknown, max: number) => typeof value === 'number' && Number.isInteger(value) ? Math.max(0, Math.min(value, max)) : 0
-    return { name: typeof data.name === 'string' ? data.name.trim().slice(0, 20) : '', storyStep: step(data.storyStep, STORY.length), lessonStep: step(data.lessonStep, LESSONS.length * 2), simulationStep: step(data.simulationStep, SIMULATION.length), reducedMotion: data.reducedMotion === true, presentation: data.presentation === 'classic' ? 'classic' : 'immersive' }
+    return { name: typeof data.name === 'string' ? data.name.trim().slice(0, 20) : '', storyStep: step(data.storyStep, STORY.length), lessonStep: step(data.lessonStep, LESSONS.length * 2), simulationStep: step(data.simulationStep, SIMULATION.length), reducedMotion: data.reducedMotion === true, presentation: data.presentation === 'classic' ? 'classic' : 'immersive', ...(Object.keys(replays).length ? { replays } : {}) }
   } catch { return { ...EMPTY_ACADEMY } }
 }

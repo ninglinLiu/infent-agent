@@ -3,10 +3,8 @@ import { z } from 'zod'
 import { getChatConfig, getRequestTimeoutMs, LIMITS } from '@/lib/ai/config'
 import { buildSystemPrompt, degradedNotice } from '@/lib/ai/system-prompt'
 import { retrieve, formatContext, sourceNames } from '@/lib/ai/retrieve'
-import { matchStrategies } from '@/lib/ai/strategy-match'
-import { encodeMeta, type ChatMeta } from '@/lib/ai/protocol'
+import { encodeEvent, encodeMeta, sanitizeModelText, type ChatMeta, type StreamEvent } from '@/lib/ai/protocol'
 import { refusalReason, refusalText } from '@/lib/ai/policy'
-import { selectStrategies } from '@/lib/ai/structured'
 import { runAgent } from '@/lib/ai/agent'
 import { accountAuth, accountError, type AccountContext } from '@/lib/account/server'
 import { chatStorage } from '@/lib/account/chat'
@@ -90,7 +88,9 @@ export async function POST(req: NextRequest) {
   return account.finish(new Response(new ReadableStream<Uint8Array>({
     async start(controller) {
       let content = ''
-      const emit = (text: string) => { content += text; if (!cancelled) controller.enqueue(encoder.encode(text)) }
+      const emit = (raw: string) => { const text = sanitizeModelText(raw); content += text; if (!cancelled) controller.enqueue(encoder.encode(text)) }
+      // 工具事件只进流、不进持久化正文；完整 trace 仍在 meta.tools 里保存
+      const event = (value: StreamEvent) => { if (!cancelled) controller.enqueue(encoder.encode(encodeEvent(value))) }
       try {
         const { hits: found } = await retrieve(question)
         abort.signal.throwIfAborted()
@@ -98,14 +98,10 @@ export async function POST(req: NextRequest) {
         const learning = await getLearningContext(account).catch(() => '\nLearning records are unavailable. Do not claim to remember any learning actions.')
         await runAgent([{ role: 'system', content: buildSystemPrompt({ lang, context: formatContext(found), surface: payload.surface }) + learning }, ...messages], {
           config, signal: abort.signal, onText: emit,
-          onTool: trace => meta.tools!.push(trace),
+          onToolStart: call => event({ type: 'tool_start', ...call }),
+          onTool: trace => { meta.tools!.push(trace); event({ type: 'tool_end', trace }) },
         })
-        const selection = await selectStrategies(question, matchStrategies(question), lang, {
-          config, signal: AbortSignal.any([abort.signal, AbortSignal.timeout(8000)]),
-        })
-        meta.strategyIds = selection.cards.map(card => card.strategyId)
-        meta.strategyCards = selection.cards
-        meta.strategyMode = selection.mode
+        // 策略卡由 draft_strategy 的工具结果生成（meta.tools），不再从固定模板里匹配。
       } catch {
         meta.degraded = true
         emit(lang === 'en' ? '\n\n[The assistant could not complete this answer. Please retry; any partial output is incomplete.]' : '\n\n[本次回答未完成，请重试；已显示的部分内容不代表完整结论。]')
