@@ -7,6 +7,11 @@ if(!base||!new URL(base).hostname.endsWith('.vercel.app'))throw Error('Explicit 
 async function main(){
  const browser=await chromium.launch({channel:'msedge',headless:true})
  const context=await browser.newContext({viewport:{width:1600,height:1000}}),page=await context.newPage(),errors=[]
+ const {execFileSync}=require('node:child_process')
+ const headers=execFileSync(process.execPath,['C:/Users/20469/AppData/Local/pnpm/global/5/node_modules/vercel/dist/vc.js','curl','/','--deployment',base,'--scope','123lkflhdskjfs-projects','--','--silent','--show-error','--output','NUL','--dump-header','-','--header','x-vercel-set-bypass-cookie: true','--max-time','20'],{encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:60000})
+ const cookies=headers.split(/\r?\n/).filter(l=>/^set-cookie:/i.test(l)).map(l=>{const pair=l.replace(/^set-cookie:\s*/i,'').split(';')[0],i=pair.indexOf('=');return {name:pair.slice(0,i),value:pair.slice(i+1),domain:new URL(base).hostname,path:'/',secure:true,sameSite:'None'}})
+ assert.ok(cookies.length,'Deployment access cookie required')
+ await context.addCookies(cookies)
  page.on('pageerror',e=>errors.push(e.message))
  // Fail before any signup request if a production Auth URL appears.
  await context.route('**/auth/v1/**',r=>{assert.equal(new URL(r.request().url()).hostname,ref+'.supabase.co');return r.continue()})
