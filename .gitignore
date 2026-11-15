@@ -48,3 +48,5 @@ playwright-report/
 
 .learning-live-accounts.json
 /supabase/.temp/
+/local-data/
+/release/

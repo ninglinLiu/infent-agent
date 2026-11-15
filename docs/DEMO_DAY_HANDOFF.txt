@@ -1,0 +1,46 @@
+omniAI Demo Day 修复与交付记录（2026-11-15，Asia/Taipei）
+
+调查证据（不附用户身份、聊天正文或账号凭据）
+生产项目 infent-agent：23 个账号、80 次请求、160 条消息。
+助手回复 70 次 complete / 10 次 failed；3 次失败正文明确提示模型未配置，另 7 次旧记录只有通用未完成提示，无法据此确定是超时、断网还是供应商故障。
+2026-11-11 有账号当天正好用完 30 次请求。
+analyze_drivers 的 5 条 INVALID_ARGUMENTS 均因提交 10 个 drivers，而工具上限是 8。
+本机直接请求 Yahoo SPY 历史接口返回 HTTP 403；DeepSeek 正常不等于行情链路正常。
+
+已实施
+1. 数据库 begin_chat 限额调整为 10 次/分钟、100 次/滚动 24 小时，区分两种错误；保留事务锁、所有权校验和匿名拒绝。原有数据不清理、不迁移到本地包。
+2. 工具允许最多 24 个候选输入，去重后最多执行 8 个，修复观察到的重复参数失败。
+3. 模型连接在收到任何流内容前对网络错误、429 和部分 5xx 重试一次；401/402 不盲目重试。记录脱敏错误分类，输出不足不再当作完整回答。
+4. 账户验证的短暂网络异常不再立即卸载已验证用户的工作台；服务端仍对每个 API 请求鉴权。
+5. 聊天增加客户端等待上限；本地在线模型等待最多约 25 秒。错误后可以继续发送、切换离线。
+6. 本地独立账号、PGlite 持久化数据和原 RLS 规则。数据只保存在该电脑，不能拿它当线上账号。
+7. 本地行情固定使用项目原有 lessons.json：SPY/QQQ/NVDA/GLD/TLT，2019-12-31 至 2024-12-31；回测按实际窗口重算。没有伪造实时价格、链上数据或模型回答。
+8. 默认离线模式是三个预设教学配置；在线模式才调用 DeepSeek。顶部、正文和数据面板均标注模式与历史数据。
+9. 便携包包含五种官方 Node 22.20.0 运行时，下载包 SHA256 与 nodejs.org 校验单逐项一致。无需现场 npm install 或 Docker。
+
+数据库发布
+迁移文件：supabase/migrations/20261115062424_chat_demo_reliability.sql；20261115064647_quota_legacy_error_compatibility.sql 保留旧版官网识别的错误文本，避免升级期间把限流误报为 503。
+staging 初次访问遇到休眠恢复/连接超时，使用数据 API 唤醒后成功应用并验证。
+staging 验证使用事务内隔离账号，最终 rollback，不保留测试账户与记录。
+生产已应用同一迁移；前后 users=23、messages=160、usage_events=80、sandbox_executions=5。
+匿名仍无 begin_chat 执行权限。Advisors 未新增告警；原有三个授权 SECURITY DEFINER RPC 提示、泄漏密码保护未开启仍保留。
+相关说明：https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable
+https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+
+验证范围
+53 项单元/回归测试通过；TypeScript、ESLint、Next standalone 构建通过。
+禁用所有 fetch 的本地集成验证：新账号、三种不同策略、历史记录、账号隔离、模拟执行幂等、超过旧 30 次额度、退出重登。
+模型故障注入：503 只重试一次、SSE 卡住超时、切离线后生成有效策略。
+实际解压包并使用包内 Windows Node 运行时验证通过：浏览器新注册、3 张策略卡、模拟执行、中文/English、退出重登；零浏览器外网请求、零页面错误。
+模型故障注入与关闭整棵进程树后重启也通过：原会话 cookie、6 条聊天、策略卡、持仓及现金保持一致。
+验收截图在 test-results/local-demo/offline-zh.png 与 offline-en.png；测试会话文件不分发。
+
+边界
+真实 DeepSeek key 未读取、未复制、未分发；未进行真实付费模型调用，因此不声称验证过真实 key、余额或现场网络。
+Windows x64 在本机实际运行；Mac/Linux 提供对应运行时，未做实机验收。须在实际演示电脑提前彩排。
+官网数据库额度已更新；其余应用代码已在本地演示包实现，尚未替换官网部署。
+项目 RELEASE_WORKFLOW.md 要求审核后合并发布；此次没有合并 main、改域名或运行 Vercel 发布。
+
+建议演示
+主电脑、备用电脑各提前解压并跑通。演示开始默认离线，介绍清楚预设教学模式；若要展示真实 Agent，提前配好演示专用 key、验证一次后再切在线。
+在线卡住时点停止，再切离线并重发。无需等待 VPN、Supabase、Yahoo 或链上 RPC 恢复。

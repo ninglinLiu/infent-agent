@@ -6,6 +6,7 @@ import { loadOracle, type OracleReading } from '@/lib/market/chainlink'
 import { planClose, planStrategy, positionsFrom, STARTING_CASH, type ExecutionPlan, type Position } from '@/lib/sandbox/engine'
 import { normalizeSpec, specId, strategySpec, type StrategySpec } from '@/lib/quant/strategy'
 import type { ExecutionReport, SandboxExecutionRow, SandboxOrderRow, SandboxPortfolio } from '@/lib/sandbox/types'
+import { localDemoEnabled } from '@/lib/local/config'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -108,12 +109,16 @@ export async function POST(req: NextRequest) {
     const quotes = await loadQuotes(symbols).catch(() => new Map())
     const quoteMs = Date.now() - quoteStart
     const oracleStart = Date.now()
-    const oracle = await loadOracle().catch(() => new Map<string, OracleReading>())
+    const oracle = localDemoEnabled() ? new Map<string, OracleReading>() : await loadOracle().catch(() => new Map<string, OracleReading>())
     const oracleMs = Date.now() - oracleStart
 
     const plan: ExecutionPlan = spec
       ? planStrategy(spec, cash, quotes, oracle)
       : planClose(symbols[0], positions.find(p => p.symbol === symbols[0]), cash, quotes.get(symbols[0]), oracle.get(symbols[0]))
+    if (localDemoEnabled()) {
+      plan.checks = plan.checks.filter(check => check.id !== 'quotes' && check.id !== 'oracle')
+      plan.checks.push({id:'snapshot',status:plan.ok?'warn':'fail',zh:'本地历史快照模拟成交；非实时行情，未做链上校验',en:'Paper execution on bundled historical closes; no live prices or oracle verification'})
+    }
     const title = spec ? spec.title : `平仓 ${symbols[0]} / Close ${symbols[0]}`
     const strategyRef = spec ? specId(spec) : null
 

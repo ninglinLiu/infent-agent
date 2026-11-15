@@ -67,7 +67,7 @@ export function getEmbeddingConfig(): EmbeddingProviderConfig | null {
 export const LIMITS = {
   maxMessages: 24,
   maxCharsPerMessage: 4000,
-  maxOutputTokens: 1200,
+  maxOutputTokens: 2400,
   retrieveTopK: 4,
   /** 同一 IP 的滑动窗口限流 */
   rateWindowMs: 60_000,

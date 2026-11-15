@@ -7,6 +7,8 @@ import { loadDaily } from '../market/history'
 import { runBacktest } from '../quant/backtest'
 import { analyzeDrivers, defaultDrivers } from '../quant/drivers'
 import { BENCHMARKS, normalizeSpec, specId, strategySpec } from '../quant/strategy'
+import { localDemoEnabled } from '@/lib/local/config'
+import { LOCAL_SYMBOLS, SNAPSHOT_SOURCE, snapshotQuotes } from '@/lib/local/market'
 
 export const priceInput = z.object({ symbol: z.string().trim().min(1).max(24).regex(/^[A-Za-z0-9.^=-]+$/) }).strict()
 export const onchainInput = z.object({ address: z.string().regex(/^0x[0-9a-fA-F]{40}$/) }).strict()
@@ -71,6 +73,10 @@ async function json(url: string, options: ToolOptions, init?: RequestInit): Prom
 
 async function price(args: z.infer<typeof priceInput>, options: ToolOptions): Promise<ToolResult> {
   const symbol = args.symbol.toUpperCase()
+  if (localDemoEnabled()) {
+    const q=snapshotQuotes([symbol]).get(symbol)
+    return q ? {ok:true,source:SNAPSHOT_SOURCE,observedAt:new Date().toISOString(),data:{...q,note:'Historical adjusted close only, not live.'}} : {ok:false,code:'UNAVAILABLE',message:`Local snapshot supports ${LOCAL_SYMBOLS.join(', ')} only.`}
+  }
   if (['BTC', 'ETH', 'SOL', 'BTC-USD', 'ETH-USD', 'SOL-USD'].includes(symbol)) {
     const base = symbol.replace('-USD', '')
     const response = z.object({ data: z.object({ amount: z.string(), base: z.literal(base), currency: z.literal('USD') }) })
@@ -131,7 +137,9 @@ async function onchain(args: z.infer<typeof onchainInput>, options: ToolOptions)
   } }
 }
 
-export const driversInput = z.object({ symbol: z.string().trim().toUpperCase().max(12), drivers: z.array(z.string().trim().toUpperCase().max(12)).max(8).optional() }).strict()
+// A model supplied ten drivers five times in production. Bound the work, but
+// tolerate a modest overlong list instead of trapping the model in a retry loop.
+export const driversInput = z.object({ symbol: z.string().trim().toUpperCase().max(12), drivers: z.array(z.string().trim().toUpperCase().max(12)).max(24).transform(items => [...new Set(items)].slice(0, 8)).optional() }).strict()
 /** MCP 客户端看到的入参形状；真正的校验由 strategySpec 完成，错误信息会告诉调用方怎么改。 */
 export const draftInput = z.object({
   title: z.string(), thesis: z.string(), capital: z.number(),
@@ -144,13 +152,13 @@ async function drivers(args: z.infer<typeof driversInput>): Promise<ToolResult> 
   const target = findAsset(args.symbol)
   if (!target || !target.tradable) return { ok: false, code: 'INVALID_ARGUMENTS', message: 'symbol must be one of the tradable whitelist symbols.' }
   const defaults = defaultDrivers(target.symbol)
-  const wanted = (args.drivers?.length ? args.drivers : defaults.drivers).map(s => findAsset(s)?.symbol).filter((s): s is string => !!s && s !== target.symbol)
+  const wanted = (localDemoEnabled() ? LOCAL_SYMBOLS : args.drivers?.length ? args.drivers : defaults.drivers).map(s => findAsset(s)?.symbol).filter((s): s is string => !!s && s !== target.symbol)
   const [main, market, ...rest] = await Promise.allSettled([target.symbol, defaults.market, ...wanted].map(s => loadDaily(s, '1y')))
   if (main.status !== 'fulfilled' || market.status !== 'fulfilled') throw new Error('History unavailable')
   const series = rest.flatMap(r => r.status === 'fulfilled' ? [r.value] : [])
   if (!series.length) throw new Error('No driver history')
   const report = analyzeDrivers(main.value, market.value, series, new Set(['US10Y']))
-  return { ok: true, source: 'Yahoo Finance daily closes', observedAt: new Date().toISOString(), data: report }
+  return { ok: true, source: localDemoEnabled() ? SNAPSHOT_SOURCE : 'Yahoo Finance daily closes', observedAt: new Date().toISOString(), data: report }
 }
 
 async function draft(input: unknown): Promise<ToolResult> {
@@ -166,7 +174,7 @@ async function draft(input: unknown): Promise<ToolResult> {
   const backtest = runBacktest(spec, spec.legs.map(leg => get(leg.symbol)), get(spec.benchmark))
   // 现金比例直接给出，模型不必自己相加（实测会算错）
   const cashWeight = Math.round((1 - spec.legs.reduce((sum, leg) => sum + leg.weight, 0)) * 1000) / 1000
-  return { ok: true, source: 'Yahoo Finance daily adjusted closes (backtest)', observedAt: new Date().toISOString(), data: { strategyId: specId(spec), spec, cashWeight, backtest } }
+  return { ok: true, source: localDemoEnabled() ? SNAPSHOT_SOURCE : 'Yahoo Finance daily adjusted closes (backtest)', observedAt: new Date().toISOString(), data: { strategyId: specId(spec), spec, cashWeight, backtest } }
 }
 
 /** 回给模型的工具结果去掉画图用的大数组，界面仍从完整 trace 渲染。 */
@@ -187,6 +195,7 @@ function abortable<T>(job: Promise<T>, signal: AbortSignal) {
 }
 
 export async function executeTool(name: string, input: unknown, options: ToolOptions = {}): Promise<ToolResult> {
+  if (localDemoEnabled() && name === 'get_onchain_stats') return {ok:false,code:'UNAVAILABLE',message:'On-chain requests are disabled in the local demo; no network data is fabricated.'}
   if (!TOOL_DEFINITIONS.some(tool => tool.function.name === name)) return { ok: false, code: 'UNKNOWN_TOOL', message: 'Tool is not available.' }
   const heavy = name === 'analyze_drivers' || name === 'draft_strategy'
   const timeout = AbortSignal.timeout(options.timeoutMs ?? (heavy ? 20_000 : 8000))

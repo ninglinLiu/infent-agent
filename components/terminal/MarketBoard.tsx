@@ -6,7 +6,7 @@ import { assetName, findAsset } from '@/lib/market/universe'
 import { useLang } from '@/lib/i18n'
 import { ago, Delta, FlashNumber, fmtPct, fmtPrice, LiveDot, Panel, Sparkline } from './primitives'
 
-export const BOARD_GROUPS: Array<{ id: string; zh: string; en: string; symbols: string[] }> = [
+export const BOARD_GROUPS: Array<{ id: string; zh: string; en: string; symbols: string[] }> = process.env.NEXT_PUBLIC_LOCAL_DEMO === '1' ? [{id:'us',zh:'本地历史快照',en:'Bundled historical closes',symbols:['NVDA','SPY','QQQ','GLD','TLT']}] : [
   { id: 'idx', zh: '全球指数', en: 'Global indices', symbols: ['SPX', 'NDX', 'HSI', 'CSI300', 'N225'] },
   { id: 'macro', zh: '宏观与商品', en: 'Macro & commodities', symbols: ['US10Y', 'VIX', 'DXY', 'XAU', 'WTI', 'USDCNH'] },
   { id: 'us', zh: '美股与 ETF', en: 'US equities & ETFs', symbols: ['NVDA', 'AAPL', 'MSFT', 'TSLA', 'AMZN', 'META', 'GOOGL', 'TSM', 'AMD', 'SPY', 'QQQ', 'GLD', 'TLT', 'SOXX'] },
@@ -42,7 +42,7 @@ export function MarketBoard({ onPick, groups = BOARD_GROUPS.map(g => g.id), comp
   const tr = (zh: string, en: string) => lang === 'en' ? en : zh
   const [, setNow] = useState(0)
   useEffect(() => { const id = setInterval(() => setNow(n => n + 1), 1000); return () => clearInterval(id) }, [])
-  return <Panel code="MKT" title={tr('全球行情 · 实时', 'Global markets · live')} right={<><LiveDot status={live.status} /><span>{live.status === 'error' ? tr('行情源暂不可用', 'Feed unavailable') : live.updatedAt ? `Yahoo Finance · ${ago(live.updatedAt, lang)}` : tr('连接中…', 'Connecting…')}</span></>} className="t-board">
+  return <Panel code="MKT" title={process.env.NEXT_PUBLIC_LOCAL_DEMO === '1' ? tr('行情 · 历史快照', 'Market · historical snapshot') : tr('全球行情 · 实时', 'Global markets · live')} right={<><LiveDot status={live.status} /><span>{process.env.NEXT_PUBLIC_LOCAL_DEMO === '1' ? 'Yahoo · 2024-12-31' : live.status === 'error' ? tr('行情源暂不可用', 'Feed unavailable') : live.updatedAt ? `Yahoo Finance · ${ago(live.updatedAt, lang)}` : tr('连接中…', 'Connecting…')}</span></>} className="t-board">
     {BOARD_GROUPS.filter(g => groups.includes(g.id)).map(group => <div className="t-group" key={group.id}>
       <div className="t-group-label">{lang === 'en' ? group.en : group.zh}</div>
       <div className={`t-grid ${compact ? 't-grid-compact' : ''}`}>{group.symbols.map(symbol => <QuoteTile key={symbol} symbol={symbol} live={live} onPick={onPick} compact={compact} />)}</div>
@@ -96,6 +96,7 @@ export function OraclePanel({ limit = 14 }: { limit?: number }) {
   const { lang } = useLang()
   const tr = (zh: string, en: string) => lang === 'en' ? en : zh
   const rows = Object.values(live.oracle).slice(0, limit)
+  if (process.env.NEXT_PUBLIC_LOCAL_DEMO === '1') return <Panel code="ORC" title={tr('链上校验 · 本地演示中停用', 'On-chain verification · disabled in local demo')} className="t-oracle"><p className="t-empty">{tr('本地模拟使用历史快照；未请求链上价格，也不宣称已完成预言机校验。', 'This demo uses historical snapshots. No on-chain prices are requested or verified.')}</p></Panel>
   return <Panel code="ORC" title={tr('Chainlink 链上预言机', 'Chainlink on-chain oracle')} right={<span>Arbitrum One · latestRoundData()</span>} className="t-oracle">
     {!rows.length ? <p className="t-empty">{tr('正在读取链上喂价…', 'Reading on-chain feeds…')}</p> : <table className="t-table">
       <thead><tr><th>{tr('交易对', 'Pair')}</th><th>{tr('链上价', 'On-chain')}</th><th>{tr('实时报价', 'Quote')}</th><th>{tr('偏离', 'Dev.')}</th><th>{tr('更新', 'Updated')}</th></tr></thead>

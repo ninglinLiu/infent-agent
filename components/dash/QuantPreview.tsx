@@ -68,7 +68,7 @@ export function QuantPreview({ active, onOpen }: { active: boolean; onOpen: () =
         <path d="M0 127H206" className="quant-grid" />
         {candles.map((candle, index) => <rect key={index} x={6 + index * 6.3} y={139 - candle.volume / maxVolume * 11} width="4" height={candle.volume / maxVolume * 11} className="quant-volume" />)}
       </svg>
-      <p className="quant-source" role="status">{data ? `${data.source === 'yahoo' ? 'Yahoo Finance' : 'Eastmoney'} · ${status === 'error' ? tr('更新失败，保留上次快照', 'Refresh failed · previous snapshot') : tr('行情快照', 'Market snapshot')}` : status === 'loading' ? tr('行情载入中 · 图形为模拟', 'Loading · illustrative chart') : tr('行情暂不可用 · 图形为模拟', 'Unavailable · illustrative chart')}</p>
+      <p className="quant-source" role="status">{data ? `${data.source === 'snapshot' ? tr('本地历史日收盘', 'Historical daily closes') : data.source === 'yahoo' ? 'Yahoo Finance' : 'Eastmoney'} · ${status === 'error' ? tr('更新失败，保留上次快照', 'Refresh failed · previous snapshot') : tr('行情快照', 'Market snapshot')}` : status === 'loading' ? tr('行情载入中 · 图形为模拟', 'Loading · illustrative chart') : tr('行情暂不可用 · 图形为模拟', 'Unavailable · illustrative chart')}</p>
       <button type="button" className="quant-refresh" disabled={status === 'loading'} onClick={() => setReload(value => value + 1)}><RefreshCw size={11} />{tr('刷新行情', 'Refresh snapshot')}</button>
     </section>
     <section className="quant-strategy">

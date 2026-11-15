@@ -2,6 +2,10 @@
 .night-scene { position: absolute; inset: 0; outline: none; }
 .night-scene canvas { display: block; touch-action: none; }
 .night-scene:focus-visible { outline: 1px solid #ffabd1; outline-offset: -4px; }
+body[data-local-demo="true"] { padding-top: 42px; }
+body[data-local-demo="true"] .night-console-overlay, body[data-local-demo="true"] .night-console { top: 42px; }
+body[data-local-demo="true"] .unified-workspace { height: calc(100dvh - 42px); }
+body[data-local-demo="true"] .t-theater { top: 42px; }
 .night-console-overlay { position: fixed; inset: 0; z-index: 90; background: #070809; }
 .night-console { position: fixed; inset: 0; z-index: 91; outline: none; }
 .street-header-brand { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }

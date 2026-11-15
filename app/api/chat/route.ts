@@ -10,6 +10,10 @@ import { accountAuth, accountError, type AccountContext } from '@/lib/account/se
 import { chatStorage } from '@/lib/account/chat'
 import { randomUUID } from 'node:crypto'
 import { getLearningContext } from '@/lib/account/learning-context'
+import { localDemoEnabled, localOffline } from '@/lib/local/config'
+import { localAnswer } from '@/lib/local/answer'
+import { LOCAL_SYMBOLS, SNAPSHOT_END } from '@/lib/local/market'
+import { ProviderError } from '@/lib/ai/provider'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -57,8 +61,8 @@ export async function POST(req: NextRequest) {
   if (messages[messages.length - 1].role !== 'user') return new Response('Last message must be from the user', { status: 400 })
   let account: AccountContext
   try { account = await accountAuth.require(req) } catch (error) { return accountError(error) }
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || req.headers.get('x-real-ip') || 'unknown'
-  if (rateLimited(ip)) return new Response('Too many requests', { status: 429, headers: { 'Retry-After': '60' } })
+  // Shared campus Wi-Fi must not spend every student's allowance as one IP.
+  if (!localDemoEnabled() && rateLimited(account.user.id)) return account.finish(new Response('Too many requests', { status: 429, headers: { 'Retry-After': '60' } }))
 
   const question = messages[messages.length - 1].content
   const requestId = payload.requestId ?? randomUUID()
@@ -74,11 +78,17 @@ export async function POST(req: NextRequest) {
   }
   const reason = refusalReason(question)
   if (reason) return savedResponse(refusalText(reason, lang), { ...meta, refused: true })
+  if (localOffline()) {
+    const demo=await localAnswer(question,lang)
+    meta.demo=true; meta.sources=[demo.source]; meta.tools=[demo.trace]
+    try { await chatStorage.finish(account,requestId,demo.text,meta,demo.trace.result.ok?'complete':'failed') } catch { meta.persistenceFailed=true }
+    return account.finish(new Response(encodeEvent({type:'tool_start',id:demo.trace.id,name:demo.trace.name,arguments:demo.trace.arguments})+encodeEvent({type:'tool_end',trace:demo.trace})+demo.text+encodeMeta(meta),{headers:responseHeaders}))
+  }
   const config = getChatConfig()
-  if (!config) return savedResponse(degradedNotice(lang), { ...meta, degraded: true })
+  if (!config) return savedResponse(degradedNotice(lang), { ...meta, degraded: true, errorCode:'MODEL_NOT_CONFIGURED' })
 
   const abort = new AbortController()
-  const timer = setTimeout(() => abort.abort(), getRequestTimeoutMs())
+  const timer = setTimeout(() => abort.abort(), localDemoEnabled() ? Math.min(25_000,getRequestTimeoutMs()) : getRequestTimeoutMs())
   const disconnect = () => abort.abort()
   req.signal.addEventListener('abort', disconnect, { once: true })
   if (req.signal.aborted) abort.abort()
@@ -96,15 +106,19 @@ export async function POST(req: NextRequest) {
         abort.signal.throwIfAborted()
         meta.sources = sourceNames(found)
         const learning = await getLearningContext(account).catch(() => '\nLearning records are unavailable. Do not claim to remember any learning actions.')
-        await runAgent([{ role: 'system', content: buildSystemPrompt({ lang, context: formatContext(found), surface: payload.surface }) + learning }, ...messages], {
+        const localContext=localDemoEnabled()?`\nLOCAL DEMO: Only ${LOCAL_SYMBOLS.join(', ')} have bundled historical data ending ${SNAPSHOT_END}. Use ONLY these symbols in strategies and drivers. All prices, backtests and executions use that historical snapshot, NOT live data. State this clearly. Do not call on-chain tools. No network market feed is available.`:''
+        await runAgent([{ role: 'system', content: buildSystemPrompt({ lang, context: formatContext(found), surface: payload.surface }) + learning + localContext }, ...messages], {
           config, signal: abort.signal, onText: emit,
           onToolStart: call => event({ type: 'tool_start', ...call }),
           onTool: trace => { meta.tools!.push(trace); event({ type: 'tool_end', trace }) },
         })
         // 策略卡由 draft_strategy 的工具结果生成（meta.tools），不再从固定模板里匹配。
-      } catch {
+      } catch (error) {
         meta.degraded = true
-        emit(lang === 'en' ? '\n\n[The assistant could not complete this answer. Please retry; any partial output is incomplete.]' : '\n\n[本次回答未完成，请重试；已显示的部分内容不代表完整结论。]')
+        meta.errorCode=error instanceof ProviderError?error.code:abort.signal.aborted?'MODEL_TIMEOUT':'MODEL_INCOMPLETE'
+        const code=meta.errorCode
+        const reason=code==='MODEL_AUTH'||code==='MODEL_BALANCE'?(lang==='en'?'Check the server model key and balance.':'请检查服务端模型密钥与余额。'):code==='MODEL_TIMEOUT'?(lang==='en'?'The model timed out.':'模型响应超时。'):code==='MODEL_OUTPUT_LIMIT'?(lang==='en'?'The answer exceeded its output budget.':'回答超出单次输出长度。'):(lang==='en'?'The model connection was interrupted.':'模型连接中断。')
+        emit(`\n\n[${reason}${lang==='en'?' Please retry; partial output is incomplete.':' 可以重新发送；已有内容不是完整结论。'}${localDemoEnabled()?(lang==='en'?' Switch to Offline demo above to continue immediately.':' 可在顶部切换“离线演示”立即继续。'):''}]`)
       } finally {
         cleanup()
         try { await chatStorage.finish(account, requestId, content, meta, cancelled ? 'cancelled' : meta.degraded ? 'failed' : 'complete') }

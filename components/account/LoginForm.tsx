@@ -33,13 +33,15 @@ export function LoginForm({ reset = false }: { reset?: boolean }) {
       } else if (mode === 'register') {
         // This flow must never send a confirmation email, even if the hosted
         // setting is accidentally re-enabled later.
-        const config = accountConfig()!
-        const response = await accountTransport(`${config.url}/auth/v1/settings`, { cache: 'no-store', headers: { apikey: config.key } })
-        if (!response.ok) throw new Error('Registration unavailable')
-        const settings = await response.json()
-        if (settings.mailer_autoconfirm !== true) {
-          setNotice(tr('注册暂未开放，请稍后再试。已有账号可以直接登录。', 'Registration is temporarily unavailable. Existing users can still sign in.'))
-          return
+        if (process.env.NEXT_PUBLIC_LOCAL_DEMO !== '1') {
+          const config = accountConfig()!
+          const response = await accountTransport(`${config.url}/auth/v1/settings`, { cache: 'no-store', headers: { apikey: config.key } })
+          if (!response.ok) throw new Error('Registration unavailable')
+          const settings = await response.json()
+          if (settings.mailer_autoconfirm !== true) {
+            setNotice(tr('注册暂未开放，请稍后再试。已有账号可以直接登录。', 'Registration is temporarily unavailable. Existing users can still sign in.'))
+            return
+          }
         }
         const { data, error } = await client.auth.signUp({ email: email.trim(), password, options: { data: { display_name: name.trim() } } })
         if (error) throw error

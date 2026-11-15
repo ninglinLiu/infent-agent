@@ -16,7 +16,9 @@
     "eval:live": "npm run build:knowledge && tsx scripts/eval.ts --live",
     "mcp": "tsx scripts/mcp-server.ts",
     "test:browser": "playwright test",
-    "test:live": "tsx scripts/smoke-live.ts"
+    "test:live": "tsx scripts/smoke-live.ts",
+    "test:local": "tsx scripts/test-local-demo.ts",
+    "build:local": "node scripts/build-local.cjs"
   },
   "dependencies": {
     "@chenglou/pretext": "^0.0.5",
@@ -48,10 +50,10 @@
     "recharts": "^2.10.3",
     "tailwind-merge": "^2.1.0",
     "three": "0.159.0",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "@electric-sql/pglite": "0.5.11"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.5.11",
     "@playwright/test": "^1.63.0",
     "@types/node": "^20.10.6",
     "@types/react": "19.3.0",

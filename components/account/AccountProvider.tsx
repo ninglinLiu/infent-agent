@@ -17,9 +17,16 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     const verify = async () => {
       const current = ++generation
       try {
-        const { data: { user: verified } } = await client.auth.getUser()
+        const { data: { user: verified }, error } = await client.auth.getUser()
+        // A transient verification outage must not unmount an already verified
+        // workspace and abort an in-flight answer. Data APIs still authenticate
+        // every request; explicit sign-out and invalid sessions clear identity.
+        if (error && (error.name === 'AuthRetryableFetchError' || error.status === 0 || (error.status ?? 0) >= 500)) {
+          if (active && current === generation) setReady(true)
+          return
+        }
         if (active && current === generation) { identity.current = verified?.id ?? null; setUser(verified); setReady(true) }
-      } catch { if (active && current === generation) { setUser(null); setReady(true) } }
+      } catch { if (active && current === generation) setReady(true) }
     }
     void verify()
     const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {

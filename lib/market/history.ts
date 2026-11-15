@@ -1,8 +1,10 @@
 import { fetchDirectJson } from '@/lib/http'
 import { findAsset } from './universe'
+import { localDemoEnabled } from '@/lib/local/config'
+import { snapshotDaily } from '@/lib/local/market'
 
 /** 日线收盘（已复权），date 为交易所当地日期 YYYY-MM-DD。 */
-export type DailySeries = { symbol: string; dates: string[]; closes: number[]; source: 'Yahoo Finance' }
+export type DailySeries = { symbol: string; dates: string[]; closes: number[]; source: string }
 
 type YahooDaily = {
   chart?: { result?: Array<{
@@ -41,6 +43,7 @@ export function parseDaily(symbol: string, json: YahooDaily): DailySeries {
 
 /** 白名单品种的日线历史，实例内缓存 1 小时。range 例如 1y / 2y / 5y。 */
 export function loadDaily(symbol: string, range: '1y' | '2y' | '3y' | '5y' = '2y'): Promise<DailySeries> {
+  if (localDemoEnabled()) { try { return Promise.resolve(snapshotDaily(symbol, range)) } catch (e) { return Promise.reject(e) } }
   const asset = findAsset(symbol)
   if (!asset) return Promise.reject(new Error(`Unsupported symbol ${symbol}`))
   const key = `${asset.symbol}:${range}`

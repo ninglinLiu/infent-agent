@@ -34,7 +34,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN" className="dark">
-      <body className="bg-[var(--bg-0)] text-[var(--fg-0)]">
+      <body className="bg-[var(--bg-0)] text-[var(--fg-0)]" data-local-demo={process.env.NEXT_PUBLIC_LOCAL_DEMO === '1' ? 'true' : undefined}>
         <Providers>{children}<PwaInstall /></Providers>
         {process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true' && <Analytics />}
       </body>

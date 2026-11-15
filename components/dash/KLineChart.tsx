@@ -522,7 +522,7 @@ export function KLineChart() {
                 )}
                 <span className="text-[10px] text-ghost">
                   {INTERVALS.find((i) => i.id === chartInterval)?.label} · {payload?.candles.length ?? 0} {t("kline.bars")}
-                  {payload ? ` · ${payload.source === "eastmoney" ? t("kline.source.eastmoney") : t("kline.source.yahoo")}` : ""}
+                  {payload ? ` · ${payload.source === "snapshot" ? (lang === "en" ? "Historical daily closes" : "历史日收盘快照") : payload.source === "eastmoney" ? t("kline.source.eastmoney") : t("kline.source.yahoo")}` : ""}
                 </span>
               </div>
             </div>

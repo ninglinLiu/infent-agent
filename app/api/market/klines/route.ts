@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { loadKlines } from "@/lib/market/server"
 import type { ChartInterval } from "@/lib/market/types"
+import { localDemoEnabled } from '@/lib/local/config'
+import { snapshotKlines } from '@/lib/local/market'
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -13,6 +15,7 @@ export async function GET(req: Request) {
   const interval = INTERVALS.has(intervalRaw) ? intervalRaw : "60"
 
   try {
+    if (localDemoEnabled()) return NextResponse.json(snapshotKlines(searchParams.get('symbol') || 'NVDA'), { headers: { 'Cache-Control':'no-store' } })
     const payload = await loadKlines({
       symbol: searchParams.get("symbol") ?? undefined,
       secid: searchParams.get("secid") ?? undefined,

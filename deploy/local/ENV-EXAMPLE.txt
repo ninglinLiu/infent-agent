@@ -1,0 +1,7 @@
+# Optional: copy this file to .env.local beside start.cjs.
+# Never share .env.local or paste a real key into group chat.
+# The bundle works offline without a key.
+DEEPSEEK_API_KEY=
+LLM_BASE_URL=https://api.deepseek.com/v1
+LLM_MODEL=deepseek-chat
+OMNIAI_MODEL_MODE=offline
