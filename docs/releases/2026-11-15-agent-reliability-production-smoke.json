@@ -1,0 +1,15 @@
+{
+  "base": "https://omniaihello.com",
+  "checkedAt": "2026-11-15T07:09:01.835Z",
+  "statuses": {
+    "sandbox": 401,
+    "learning": 401,
+    "profile": 401,
+    "conversations": 401,
+    "chat": 401
+  },
+  "productionSupabase": true,
+  "localDemoDisabled": true,
+  "pageErrors": [],
+  "noAccountCreation": true
+}
