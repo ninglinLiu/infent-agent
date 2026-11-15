@@ -20,3 +20,6 @@ docs
 tests
 eval/results
 scripts/.embedding-cache.json
+release
+local-data
+deploy/local
