@@ -50,6 +50,8 @@ export function splitEvents(raw: string): { text: string; events: StreamEvent[] 
 }
 
 export type ChatMeta = {
+  errorCode?: string
+  demo?: boolean
   persistenceFailed?: boolean
   /** 服务端确定性匹配出的策略卡 id，对应 lib/mock/agent.ts 的 STRATEGIES */
   strategyIds: string[]

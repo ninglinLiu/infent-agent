@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  serverExternalPackages:['@electric-sql/pglite'],
+  ...(process.env.NEXT_PUBLIC_LOCAL_DEMO === '1' ? { output:'standalone', outputFileTracingIncludes:{'/*':['./supabase/migrations/**/*','./node_modules/@electric-sql/pglite/dist/**/*']} } : {}),
   // Keep the opt-in local staging build separate from normal production artifacts.
   distDir: process.env.INFENT_STAGING === '1' ? '.next-staging' : '.next',
   reactStrictMode: true,

@@ -85,7 +85,7 @@ export function LiveBook({ onOpenPortfolio }: { onOpenPortfolio?: () => void }) 
   const nav = (portfolio?.cash ?? 0) + value
   const shownNav = useTween(nav)
   if (!user || !positions.length) return null
-  return <Panel code="PRT" title={tr('模拟持仓 · 实时盯市', 'Paper book · marked live')} right={<><LiveDot status={live.status} /><span>{portfolio?.mode === 'db' ? 'Supabase' : tr('本地账本', 'Local ledger')}</span></>}>
+  return <Panel code="PRT" title={process.env.NEXT_PUBLIC_LOCAL_DEMO === '1' ? tr('模拟持仓 · 历史快照估值', 'Paper book · historical valuation') : tr('模拟持仓 · 实时盯市', 'Paper book · marked live')} right={<><LiveDot status={live.status} /><span>{process.env.NEXT_PUBLIC_LOCAL_DEMO === '1' ? tr('本地账本', 'Local ledger') : portfolio?.mode === 'db' ? 'Supabase' : tr('本地账本', 'Local ledger')}</span></>}>
     <div className="t-nav"><small>{tr('组合净值', 'Net asset value')}</small><b className="t-num">{fmtMoney(shownNav, 2)}</b><span className={`t-num ${nav >= 100000 ? 't-up' : 't-down'}`}>{fmtPct(nav / 100000 - 1, 2, true)}</span>{onOpenPortfolio && <button type="button" className="t-link" onClick={onOpenPortfolio}>{tr('完整组合', 'Full portfolio')}<ArrowUpRight size={13} /></button>}</div>
     <table className="t-table compact"><tbody>{positions.map(p => {
       const q = live.quotes[p.symbol]

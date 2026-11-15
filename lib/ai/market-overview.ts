@@ -2,6 +2,8 @@ import { z } from 'zod'
 import { loadQuotes } from '../market/quotes'
 import { findAsset } from '../market/universe'
 import type { ToolResult } from './tools'
+import { localDemoEnabled } from '@/lib/local/config'
+import { LOCAL_SYMBOLS, SNAPSHOT_SOURCE } from '@/lib/local/market'
 
 export const overviewInput = z.object({ scope: z.enum(['global', 'us', 'hk', 'cn', 'jp']).optional() }).strict()
 const SCOPES = {
@@ -15,7 +17,7 @@ const SCOPES = {
 /** Reuses the terminal's cached, allowlisted batch feed, not browser-supplied prices. */
 export async function marketOverview(input: z.infer<typeof overviewInput>, reader: typeof loadQuotes = loadQuotes): Promise<ToolResult> {
   const scope = input.scope ?? 'global'
-  const wanted = [...SCOPES[scope]]
+  const wanted = localDemoEnabled() ? LOCAL_SYMBOLS : [...SCOPES[scope]]
   const quotes = await reader(wanted)
   const observedAt = new Date().toISOString()
   const rows = wanted.flatMap(symbol => {
@@ -34,7 +36,7 @@ export async function marketOverview(input: z.infer<typeof overviewInput>, reade
     }]
   })
   if (!rows.length) return { ok: false, code: 'UNAVAILABLE', message: 'The market feed returned no usable quotes. Do not invent a market overview.' }
-  return { ok: true, source: 'Yahoo Finance (same batch feed as the market terminal)', observedAt, data: {
+  return { ok: true, source: localDemoEnabled() ? SNAPSHOT_SOURCE : 'Yahoo Finance (same batch feed as the market terminal)', observedAt, data: {
     scope, quotes: rows, unavailableSymbols: wanted.filter(symbol => !quotes.has(symbol)),
     note: 'Latest available snapshots, not news. changePct is percent versus each instrument\'s previous close, not a synchronized global trading day. Use each quotedAt and timeZone; observedAt is retrieval time. Closed markets may show their last session, and quotes may be delayed or old. Do not present old quotes as today\'s trading. Missing changes are unknown, not zero. US10Y is a yield in percent, not a dollar price. XAU and WTI here are futures proxies. Do not infer news causes, volume, market breadth or sector flows from these quotes.',
   } }

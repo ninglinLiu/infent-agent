@@ -245,7 +245,7 @@ function AccountChat(handlers: AgentChatHandlers) {
           </div>
         </div>
         <span className="chip info">
-          <Sparkles className="h-2.5 w-2.5" /> DeepSeek · 5 tools
+          <Sparkles className="h-2.5 w-2.5" /> {process.env.NEXT_PUBLIC_LOCAL_DEMO === '1' ? (lang === 'en' ? 'Local demo' : '本地演示') : 'DeepSeek'} · 5 tools
         </span>
       </div>
 
@@ -254,7 +254,7 @@ function AccountChat(handlers: AgentChatHandlers) {
       <div className={sharkStyles.stage}>
         <AsciiSharksBackdrop subdued={!fresh} />
         <div ref={scrollRef} className={`agent-chat-messages flex-1 overflow-y-auto thin-scroll px-3 py-3 space-y-3 ${sharkStyles.messages}`}>
-          {fresh && <div className="agent-chat-welcome"><p>{lang === 'en' ? 'ONE QUESTION · ONE STRATEGY · ONE CLICK' : '一个问题 · 一份策略书 · 一键模拟执行'}</p><h2>{lang === 'en' ? 'What are you curious about?' : '今天，你想了解什么？'}</h2><span className="agent-chat-welcome-sub">{lang === 'en' ? 'Describe your capital, risk and view. The agent researches with live data, drafts a strategy, backtests it on two years of real prices, and lets you deploy it to a paper sandbox.' : '说说你的资金、风险承受和看法。Agent 会用实时数据研究、写出策略书、用两年真实价格回测，再一键部署到模拟沙箱。'}</span></div>}
+          {fresh && <div className="agent-chat-welcome"><p>{lang === 'en' ? 'ONE QUESTION · ONE STRATEGY · ONE CLICK' : '一个问题 · 一份策略书 · 一键模拟执行'}</p><h2>{lang === 'en' ? 'What are you curious about?' : '今天，你想了解什么？'}</h2><span className="agent-chat-welcome-sub">{process.env.NEXT_PUBLIC_LOCAL_DEMO === '1' ? (lang === 'en' ? 'Bundled historical data: SPY, QQQ, NVDA, GLD, TLT. Offline presets are not live AI answers; choose the mode above.' : '本地历史数据支持 SPY、QQQ、NVDA、GLD、TLT；离线预设不是实时 AI 回答，可在顶部选择模式。') : lang === 'en' ? 'Describe your capital, risk and view. The agent researches with live data, drafts a strategy, backtests it on two years of real prices, and lets you deploy it to a paper sandbox.' : '说说你的资金、风险承受和看法。Agent 会用实时数据研究、写出策略书、用两年真实价格回测，再一键部署到模拟沙箱。'}</span></div>}
           <AnimatePresence initial={false}>
             {messages.map((m) =>
               m.role === "user" ? (

@@ -2,6 +2,8 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
 import { accountConfig } from './config'
 import { accountTransport } from './fetch'
+import { localDemoEnabled } from '@/lib/local/config'
+import { localAccount } from '@/lib/local/auth'
 
 export class AccountError extends Error {
   constructor(public status: number, message: string) { super(message) }
@@ -31,6 +33,11 @@ export const accountAuth = {
     const origin = req.headers.get('origin')
     if (!['GET', 'HEAD'].includes(req.method) && origin && origin !== req.nextUrl.origin) {
       throw new AccountError(403, 'Cross-origin request rejected.')
+    }
+    if (localDemoEnabled()) {
+      const context = await localAccount(req)
+      if (!context) throw new AccountError(401, '请先登录 / Please sign in.')
+      return context
     }
     const context = requestAccount(req)
     const { data: { user }, error } = await context.db.auth.getUser()

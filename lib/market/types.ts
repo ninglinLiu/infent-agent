@@ -44,7 +44,7 @@ export type Quote = {
 export type KlinePayload = {
   instrument: Instrument
   interval: ChartInterval
-  source: "eastmoney" | "yahoo"
+  source: "eastmoney" | "yahoo" | "snapshot"
   candles: Candle[]
   quote: Quote
   precision: number

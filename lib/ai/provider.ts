@@ -1,4 +1,9 @@
 import type { ChatProviderConfig } from './config'
+import { setTimeout as delay } from 'node:timers/promises'
+
+export class ProviderError extends Error {
+  constructor(public code: string, public status?: number) { super(code) }
+}
 
 export type ToolCall = { id: string; type: 'function'; function: { name: string; arguments: string } }
 export type ModelMessage = {
@@ -10,15 +15,25 @@ export type ModelMessage = {
 export type ProviderOptions = { config: ChatProviderConfig; signal: AbortSignal; fetcher?: typeof fetch }
 
 export async function completion(body: Record<string, unknown>, options: ProviderOptions): Promise<Response> {
-  const response = await (options.fetcher ?? fetch)(`${options.config.baseUrl}/chat/completions`, {
+  // Retry only before any stream content is consumed; never duplicate tool execution.
+  for (let attempt = 0; attempt < 2; attempt++) {
+  let response: Response
+  try { response = await (options.fetcher ?? fetch)(`${options.config.baseUrl}/chat/completions`, {
     method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${options.config.apiKey}` },
     body: JSON.stringify({ model: options.config.model, ...body }), signal: options.signal,
-  })
+  }) } catch {
+    if (options.signal.aborted) throw new ProviderError('MODEL_TIMEOUT')
+    if (!attempt) { await delay(400, undefined, { signal: options.signal }); continue }
+    throw new ProviderError('MODEL_NETWORK')
+  }
   if (!response.ok || !response.body) {
     await response.body?.cancel()
-    throw new Error(`Model provider HTTP ${response.status}`)
+    if (!attempt && [429,500,502,503,504].includes(response.status)) { await delay(500, undefined, { signal: options.signal }); continue }
+    throw new ProviderError(response.status === 401 || response.status === 403 ? 'MODEL_AUTH' : response.status === 402 ? 'MODEL_BALANCE' : response.status === 429 ? 'MODEL_BUSY' : 'MODEL_HTTP',response.status)
   }
   return response
+  }
+  throw new ProviderError('MODEL_UNAVAILABLE')
 }
 
 /** Parse events across byte boundaries, including a final line without a newline. */
@@ -52,6 +67,7 @@ export async function readCompletionStream(response: Response, onText: (delta: s
       if (call.function.arguments.length > 4000 || call.id.length > 256 || call.function.name.length > 80) throw new Error('Tool output limit')
       calls.set(patch.index, call)
     }
+    if (choice?.finish_reason === 'length') throw new ProviderError('MODEL_OUTPUT_LIMIT')
     if (choice?.finish_reason) finished = true
   }
   try {

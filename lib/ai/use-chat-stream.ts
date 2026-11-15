@@ -54,6 +54,7 @@ export function useChatStream() {
       setStreaming(true)
 
       let raw = ''
+      const timer=setTimeout(()=>ctrl.abort(new Error('CLIENT_TIMEOUT')),125_000)
       try {
         const res = await fetch('/api/chat', {
           method: 'POST',
@@ -64,7 +65,8 @@ export function useChatStream() {
         })
 
         if (!res.ok || !res.body) {
-          const msg =
+          const detail=await res.json().catch(()=>null) as {error?:string}|null
+          const msg = detail?.error || (
             res.status === 401
               ? lang === 'en' ? 'Please sign in to use the assistant.' : '请先登录，再使用 AI 助手。'
               : res.status === 429
@@ -73,7 +75,7 @@ export function useChatStream() {
                 : '请求太频繁，请稍等一下再问。'
               : lang === 'en'
                 ? 'The assistant is unavailable right now.'
-                : '助手暂时不可用，请稍后重试。'
+                : '助手暂时不可用，请稍后重试。')
           onError?.(msg)
           onDone(msg, null)
           return
@@ -111,6 +113,7 @@ export function useChatStream() {
         onError?.(msg)
         onDone(bodyText(raw) || msg, null)
       } finally {
+        clearTimeout(timer)
         if (abortRef.current === ctrl) {
           abortRef.current = null
           setStreaming(false)

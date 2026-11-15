@@ -1,5 +1,7 @@
 import { fetchDirectJson } from '@/lib/http'
 import { findAsset, type Asset } from './universe'
+import { localDemoEnabled } from '@/lib/local/config'
+import { snapshotQuotes } from '@/lib/local/market'
 
 export type LiveQuote = {
   symbol: string
@@ -13,7 +15,7 @@ export type LiveQuote = {
   open: boolean
   /** 当日 5 分钟收盘价，用于迷你走势线 */
   spark: number[]
-  source: 'Yahoo Finance'
+  source: string
 }
 
 type SparkMeta = {
@@ -74,6 +76,7 @@ async function refresh(assets: Asset[]) {
 
 /** 批量取实时报价。只接受白名单代码；同一实例 4 秒内复用结果。 */
 export async function loadQuotes(symbols: string[]): Promise<Map<string, LiveQuote>> {
+  if (localDemoEnabled()) return snapshotQuotes(symbols)
   const assets = [...new Set(symbols)].map(symbol => findAsset(symbol)).filter((asset): asset is Asset => !!asset)
   const stale = assets.filter(asset => (Date.now() - (cache.get(asset.symbol)?.at ?? 0)) > TTL_MS)
   const jobs: Promise<void>[] = []
